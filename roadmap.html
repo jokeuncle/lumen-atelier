@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lumen Atelier · AI Infra 90-Day Roadmap</title>
+<style>
+  html, body {
+    margin: 0; padding: 0; background: #05070f; overflow: hidden;
+    font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif;
+    color: #e8eaed;
+  }
+  canvas { display: block; cursor: default; }
+  canvas.hot { cursor: pointer; }
+
+  #hint {
+    position: fixed; bottom: 14px; right: 18px;
+    font-size: 11px; color: #5a6378; letter-spacing: 1px;
+    pointer-events: none;
+  }
+  #cta {
+    position: fixed; bottom: 14px; left: 18px;
+    font-size: 11px; color: #8892a8; letter-spacing: 0.5px;
+    pointer-events: none;
+  }
+  #cta span { color: #00d9ff; }
+
+  #backdrop {
+    position: fixed; inset: 0;
+    background: rgba(5,7,15,0.55);
+    backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s ease;
+    z-index: 10;
+  }
+  #backdrop.open { opacity: 1; pointer-events: auto; }
+
+  #panel {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: min(560px, 92vw);
+    background: rgba(13, 18, 38, 0.92);
+    backdrop-filter: blur(20px) saturate(140%);
+    border-left: 1px solid rgba(120,140,200,0.15);
+    transform: translateX(100%);
+    transition: transform .35s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 11;
+    display: flex; flex-direction: column;
+    box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+  }
+  #panel.open { transform: translateX(0); }
+
+  #panel .accent {
+    height: 3px; flex: 0 0 auto;
+    background: var(--accent, #00d9ff);
+    box-shadow: 0 0 24px var(--accent, #00d9ff);
+  }
+  #panel header {
+    padding: 28px 36px 18px;
+    border-bottom: 1px solid rgba(120,140,200,0.08);
+    flex: 0 0 auto;
+  }
+  #panel .meta {
+    font-family: "SF Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 1.5px;
+    color: var(--accent, #00d9ff);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  #panel h1 {
+    margin: 0; font-size: 24px; font-weight: 600;
+    color: #f3f5fa; letter-spacing: -0.2px;
+  }
+  #panel .sub {
+    margin-top: 6px; font-size: 12px; color: #6c7693;
+  }
+  #panel .body {
+    flex: 1 1 auto; overflow-y: auto;
+    padding: 22px 36px 80px;
+  }
+  #panel .body::-webkit-scrollbar { width: 6px; }
+  #panel .body::-webkit-scrollbar-thumb {
+    background: rgba(120,140,200,0.18); border-radius: 3px;
+  }
+
+  .section { margin-bottom: 26px; }
+  .section h3 {
+    font-size: 11px; letter-spacing: 2px;
+    color: #6c7693; font-weight: 600;
+    margin: 0 0 12px; text-transform: uppercase;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section h3::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--accent); border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .section ul { margin: 0; padding: 0; list-style: none; }
+  .section li {
+    font-size: 13px; line-height: 1.65;
+    color: #c8cfdb; padding: 4px 0 4px 18px;
+    position: relative;
+  }
+  .section li::before {
+    content: '·'; position: absolute; left: 4px;
+    color: var(--accent); font-weight: 700;
+  }
+  .section.reading li::before { content: '→'; font-size: 11px; top: 5px; }
+  .section.exp li {
+    font-family: "SF Mono", ui-monospace, monospace;
+    font-size: 12px; color: #b8c1d1;
+    background: rgba(120,140,200,0.05);
+    padding: 6px 10px 6px 24px;
+    border-radius: 4px; margin-bottom: 4px;
+  }
+  .section.exp li::before { content: '$'; left: 10px; opacity: 0.6; }
+  .section.deliver li, .section.accept li {
+    font-size: 13px; line-height: 1.6;
+    color: #d8dfeb;
+  }
+  .section.deliver li::before { content: '⌧'; font-size: 11px; }
+  .section.accept li::before { content: '✓'; font-size: 11px; }
+
+  .section a {
+    color: inherit; text-decoration: none;
+    border-bottom: 1px dotted rgba(120,140,200,0.3);
+  }
+  .section a:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  #close {
+    position: absolute; top: 22px; right: 22px;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(120,140,200,0.08);
+    border: 1px solid rgba(120,140,200,0.12);
+    color: #8892a8; cursor: pointer;
+    font-size: 14px; font-family: "SF Mono", monospace;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s ease;
+  }
+  #close:hover { background: rgba(120,140,200,0.15); color: #e8eaed; }
+
+  .esc-hint {
+    position: absolute; bottom: 24px; left: 36px;
+    font-size: 10px; letter-spacing: 1.5px;
+    color: #4a5268; font-family: "SF Mono", monospace;
+  }
+  .esc-hint kbd {
+    background: rgba(120,140,200,0.1);
+    border: 1px solid rgba(120,140,200,0.15);
+    padding: 2px 6px; border-radius: 3px;
+    color: #8892a8; margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="cta">点击任一节点 <span>◉</span> 展开本节讲义</div>
+<div id="hint">LUMEN · ATELIER  /  M5 PRO · 24GB</div>
+
+<div id="backdrop"></div>
+<aside id="panel">
+  <div class="accent"></div>
+  <button id="close" title="关闭">×</button>
+  <header>
+    <div class="meta" id="p-meta"></div>
+    <h1 id="p-title"></h1>
+    <div class="sub" id="p-sub"></div>
+  </header>
+  <div class="body" id="p-body"></div>
+  <div class="esc-hint"><kbd>ESC</kbd> 关闭</div>
+</aside>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+const PALETTE = {
+  bg0: '#05070f', bg1: '#0d1226',
+  grid: 'rgba(120,140,200,0.06)',
+  text: '#e8eaed', textDim: '#8892a8', textFaint: '#4a5268',
+  mainline: '#00d9ff', sideline: '#ffb84d', cloud: '#ff6ec7',
+};
+
+const ROUTES = [
+  {
+    name: '主线', en: 'MAINLINE',
+    sub: 'vLLM / SGLang · 推理引擎内核',
+    color: PALETTE.mainline,
+    nodes: [
+      {
+        week: 1.5, weeks: 'W1 – W2',
+        title: 'llama.cpp 推理流程',
+        detail: 'Qwen2.5-7B Q4 跑通 · 读 ggml 张量布局',
+        goals: [
+          '建立 LLM 推理的端到端心智模型，能口述一次 forward 全过程',
+          '理解 prefill 与 decode 两阶段的本质差异（吞吐 vs 延迟）',
+          '把 KV cache 从抽象概念变成具体的内存结构',
+        ],
+        knowledge: [
+          'GGUF 文件格式：header / metadata / tensor data 三段布局',
+          'ggml 张量结构：ne[] 维度、nb[] stride、type 量化类型、op 算子',
+          '推理主循环：tokenize → embed → N × (RMSNorm + attn + FFN) → unembed → sample',
+          'Attention 内部：QKV 投影 → RoPE → masked softmax → out 投影',
+          'KV cache 形状：[layer][batch, head, seq, head_dim]，decode 阶段每步追加 1',
+          '量化方案对比：Q4_K_M(4.5bpw) / Q5_K_M(5.5bpw) / Q8_0(8.5bpw) 的质量/体积取舍',
+          '采样策略：temperature / top-k / top-p / repetition penalty 各自抑制什么',
+        ],
+        reading: [
+          { name: 'llama.cpp 源码（src/llama.cpp 主循环）', url: 'https://github.com/ggml-org/llama.cpp' },
+          { name: 'ggml 张量库（ggml/src/ggml.c）', url: 'https://github.com/ggml-org/ggml' },
+          { name: '《The Illustrated Transformer》— Jay Alammar', url: 'https://jalammar.github.io/illustrated-transformer/' },
+          { name: 'Lilian Weng "The Transformer Family v2.0"（概念地图）', url: 'https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/' },
+        ],
+        experiments: [
+          'brew install llama.cpp && 下载 Qwen2.5-7B-Instruct-Q4_K_M.gguf',
+          'llama-cli -m model.gguf -p "..." --temp 0.7 跑通对话',
+          'llama-bench -m model.gguf 测出 prefill / decode 的 tokens/sec',
+          'llama-perplexity -m model.gguf -f wiki.test.raw 评估 PPL',
+          '把 --n-gpu-layers 从 0 调到全 GPU，观察 Mac 上 Metal 后端的提速',
+        ],
+        deliverable: '一篇 2000 字笔记《llama.cpp 一次 forward 都做了什么》，含张量流图',
+        acceptance: '白板能画出 prefill / decode 两阶段的张量形状与 KV cache 增长过程',
+      },
+      {
+        week: 3.5, weeks: 'W3 – W4',
+        title: 'PagedAttention',
+        detail: 'vLLM 源码 · KV cache block manager',
+        goals: [
+          '理解 vLLM 为什么比 HuggingFace transformers.generate 快一个数量级',
+          '掌握 PagedAttention 如何用 OS 虚拟内存思想消除 KV 碎片',
+          '能完整描述一次请求在 BlockManager 中的状态转移',
+        ],
+        knowledge: [
+          '传统 KV cache 问题：reserve max_seq_len 造成 60-80% 内存浪费',
+          'Block / Page 抽象：固定大小（默认 16 token）的物理块',
+          'Logical block table：每个 sequence 维护逻辑→物理的映射表',
+          'Block manager：allocator + ref counter + free list',
+          'Copy-on-write 与 prefix caching：beam search / system prompt 共享',
+          'Swap 与 evict：GPU 满时把 block 换到 CPU 内存',
+          'PagedAttention kernel：自定义 CUDA kernel 处理非连续 KV',
+          'vLLM V1 架构（2025）：异步调度 + zero-overhead prefix caching',
+        ],
+        reading: [
+          { name: 'vLLM 论文：Efficient Memory Management for LLM Serving (SOSP\'23)', url: 'https://arxiv.org/abs/2309.06180' },
+          { name: 'vllm/v1/core/kv_cache_manager.py', url: 'https://github.com/vllm-project/vllm' },
+          { name: 'vllm/attention/ops/paged_attn.py（kernel 入口）', url: 'https://github.com/vllm-project/vllm' },
+          { name: 'vLLM 官方设计文档', url: 'https://docs.vllm.ai/en/latest/design/arch_overview.html' },
+        ],
+        experiments: [
+          'pip install vllm && 跑 examples/offline_inference.py（云 A100）',
+          '改 --block-size 8 / 16 / 32，观察吞吐与显存',
+          '启用 --enable-prefix-caching，相同 system prompt 重复请求测命中率',
+          '画图：x=batch size, y=throughput, 对比 HF transformers vs vLLM',
+        ],
+        deliverable: '一篇博客《PagedAttention：把 KV cache 当虚拟内存管》，配吞吐曲线图',
+        acceptance: '能在白板上画出一次请求经过 (Waiting→Running→Swapped→Finished) 的完整状态机',
+      },
+      {
+        week: 5.5, weeks: 'W5 – W6',
+        title: 'Continuous Batching',
+        detail: '调度器读完 · 自己写 mini 版',
+        goals: [
+          '理解 iteration-level scheduling 对比 static batching 的吞吐提升',
+          '掌握 vLLM Scheduler 的抢占策略与公平性',
+          '能自己实现一个 100 行的 mini scheduler 跑起来',
+        ],
+        knowledge: [
+          'Static batching 痛点：head-of-line blocking，最慢的请求拖全 batch',
+          'Iteration-level scheduling：每步可加入新请求 / 释放完成请求',
+          'SequenceGroup / Sequence 状态机：WAITING → RUNNING → SWAPPED → FINISHED',
+          'Scheduler.schedule()：在 token budget 下选择 running + 抢占决策',
+          '抢占两种方式：swap（KV 到 CPU）vs recompute（丢弃后重算 prefill）',
+          'Chunked prefill：长 prompt 分块，让 decode 不被 prefill 饿死',
+          'Prefill-decode 调度策略：vLLM 0.6+ 与 SGLang RadixAttention 对比',
+        ],
+        reading: [
+          { name: 'Orca 论文：A Distributed Serving System for Transformer-Based Generative Models (OSDI\'22)', url: 'https://www.usenix.org/conference/osdi22/presentation/yu' },
+          { name: 'vllm/v1/core/sched/scheduler.py', url: 'https://github.com/vllm-project/vllm' },
+          { name: 'SGLang RadixAttention 论文', url: 'https://arxiv.org/abs/2312.07104' },
+          { name: 'Chunked Prefill 设计 PR', url: 'https://github.com/vllm-project/vllm/issues/3130' },
+        ],
+        experiments: [
+          '本地用 Python 写一个 mini-batcher：100 行内实现 iteration-level scheduling',
+          '模拟 100 个长度 [50, 2000] 随机的请求，对比 static vs continuous 的 TTFT/TPOT',
+          '云端 A100 上：vLLM benchmark_serving 跑两种 --max-num-seqs，看 P99 延迟',
+          '把 chunked-prefill 开/关，看 ITL（inter-token latency）稳定性',
+        ],
+        deliverable: 'GitHub repo: mini-continuous-batcher，含 README + benchmark 图',
+        acceptance: '能解释 vLLM OOM 时为什么 preempt 这个请求而不是那个（评分函数）',
+      },
+      {
+        week: 7.5, weeks: 'W7 – W8',
+        title: 'KV Cache 量化 / FP8',
+        detail: 'AWQ · GPTQ · 对比延迟与精度',
+        goals: [
+          '掌握主流推理量化方案的算法原理与工程实现',
+          '能根据场景（throughput-bound / latency-bound / accuracy-critical）选型',
+          '建立"量化是 memory-bandwidth 优化"的核心直觉',
+        ],
+        knowledge: [
+          '推理瓶颈：decode 阶段是 memory-bound，矩阵越小越快',
+          'Weight-only 量化：AWQ（activation-aware salient channel 保留）/ GPTQ（Hessian-based）/ RTN',
+          'Activation 量化：SmoothQuant（把 outlier 从 activation 迁到 weight）',
+          'KV cache 量化：FP8 E4M3 / E5M2 / INT8 per-channel',
+          '校准集（calibration dataset）：选 128 条多样化样本即可',
+          '低位 GEMM kernel：Marlin（W4A16）/ Machete（Hopper）/ CUTLASS',
+          '质量评估：MMLU / GSM8K / 困惑度三件套，重点看 task-specific 退化',
+          'FP8 vs INT8：FP8 数值动态范围更大，对 outlier 友好',
+        ],
+        reading: [
+          { name: 'AWQ 论文（MIT, 2023）', url: 'https://arxiv.org/abs/2306.00978' },
+          { name: 'GPTQ 论文（ICLR\'23）', url: 'https://arxiv.org/abs/2210.17323' },
+          { name: 'SmoothQuant 论文（ICML\'23）', url: 'https://arxiv.org/abs/2211.10438' },
+          { name: 'vllm/model_executor/layers/quantization/', url: 'https://github.com/vllm-project/vllm' },
+          { name: 'llm-compressor（vLLM 官方量化工具）', url: 'https://github.com/vllm-project/llm-compressor' },
+        ],
+        experiments: [
+          '用 llm-compressor 把 Qwen2.5-7B 压成 W4A16-AWQ，本地 mlx / llama.cpp 跑',
+          '云 A100 上 vLLM 起 FP16 / W4A16 / W4A16+FP8KV 三档，比 throughput / TTFT',
+          '跑 lm-eval-harness 测 MMLU，画"位宽 vs 精度退化"曲线',
+          '极端测试：把 KV cache 压到 INT4 看输出何时崩坏',
+        ],
+        deliverable: '量化选型报告：三档配置 × 三个 benchmark × 三个指标的矩阵表',
+        acceptance: '给定"用户要 Qwen2.5-32B 在单 A100 跑客服"，能 5 分钟内说出推荐方案与理由',
+      },
+      {
+        week: 9.5, weeks: 'W9 – W10',
+        title: 'Speculative Decoding',
+        detail: '复现 EAGLE / Medusa · benchmark',
+        goals: [
+          '理解 draft-then-verify 范式如何在不损失精度的前提下加速 decode',
+          '掌握 acceptance rate 与端到端加速比之间的数学关系',
+          '能在 vLLM 中跑通并 tuning 一套投机解码配置',
+        ],
+        knowledge: [
+          'Decode 阶段的浪费：每步只算 1 个 token，GPU 算力闲置',
+          '基本范式：draft model 生成 k 个 token → target model 一次 verify k+1 个位置',
+          '修正拒绝采样（Modified Rejection Sampling）：保证输出分布与 target 一致',
+          'EAGLE：在 target model 的 last hidden state 上接一个轻量 draft head',
+          'Medusa：多个并行 head 同时预测 token_1, token_2, ..., token_k',
+          'Lookahead decoding：无需 draft model，用 n-gram 缓存',
+          '加速比公式：speedup = (1 + α + α² + ... + αᵏ) / (kc + 1)，α=accept rate, c=draft/target 时间比',
+          'vLLM spec_decode 模块的实现：worker / proposer / scorer',
+        ],
+        reading: [
+          { name: 'Fast Inference from Transformers via Speculative Decoding (Google, 2022)', url: 'https://arxiv.org/abs/2211.17192' },
+          { name: 'EAGLE 论文（ICML\'24）', url: 'https://arxiv.org/abs/2401.15077' },
+          { name: 'Medusa 论文', url: 'https://arxiv.org/abs/2401.10774' },
+          { name: 'vllm/spec_decode/ 源码', url: 'https://github.com/vllm-project/vllm' },
+        ],
+        experiments: [
+          '云 A100：Llama-3.1-8B 作 target、Llama-3.2-1B 作 draft，跑投机解码',
+          '测不同 num_speculative_tokens (3/5/7) 下的 accept rate 与 wall-clock speedup',
+          '换 EAGLE checkpoint，对比"独立 draft model" vs "EAGLE head"',
+          '在不同任务（代码 / 对话 / 翻译）上测 accept rate 差异',
+        ],
+        deliverable: '实验报告 + 公式推导：什么场景下投机解码反而变慢',
+        acceptance: '给一个 target/draft 组合与 α、c，能口算出理论加速比上限',
+      },
+      {
+        week: 11.5, weeks: 'W11 – W12',
+        title: '提一个 vLLM PR',
+        detail: '从 good-first-issue 切入 · 真名上榜',
+        goals: [
+          '从消费者变贡献者，在主流 AI Infra 项目留下名字',
+          '熟悉真实开源项目的开发流程：issue → fork → PR → review → merge',
+          '建立长期可信赖的开源 identity',
+        ],
+        knowledge: [
+          'vLLM 贡献流程：DCO sign-off / pre-commit / pytest / CI 矩阵',
+          '代码风格：ruff / isort / mypy 配置',
+          '测试体系：pytest + 自定义 LM eval（accuracy 不能掉）',
+          '维护者文化：直接、技术导向，PR 描述要给数据',
+          'Issue 分类：good-first-issue / help-wanted / feature-request / bug',
+          '社区渠道：vLLM Slack、双周开发例会、RFC issue',
+        ],
+        reading: [
+          { name: 'vLLM CONTRIBUTING.md', url: 'https://github.com/vllm-project/vllm/blob/main/CONTRIBUTING.md' },
+          { name: 'good-first-issue 标签', url: 'https://github.com/vllm-project/vllm/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22' },
+          { name: 'vLLM Slack 申请', url: 'https://slack.vllm.ai/' },
+          { name: '近期被 merge 的小 PR（学风格）', url: 'https://github.com/vllm-project/vllm/pulls?q=is%3Apr+is%3Aclosed+is%3Amerged' },
+        ],
+        experiments: [
+          '从 good-first-issue 挑一个：文档 / 小 bug / 量化 backend 兼容性',
+          'fork → 本地装 dev mode → 写测试 → 跑 CI',
+          'PR 描述模板：背景 / 改动 / 测试结果（含 benchmark 数据）',
+          '主动 ping reviewer，回应 comment 不超过 24h',
+        ],
+        deliverable: '一个 merged vLLM PR（或同等级 SGLang PR）',
+        acceptance: 'PR 被 merge，commit log 留下你的真名 + email',
+      },
+    ]
+  },
+  {
+    name: '副线', en: 'SIDELINE',
+    sub: 'MLX · Apple Silicon ML 栈',
+    color: PALETTE.sideline,
+    nodes: [
+      {
+        week: 2, weeks: 'W1 – W2',
+        title: 'mlx-lm 上手',
+        detail: 'Qwen / Llama 本地推理 · 量化转换',
+        goals: [
+          '建立 MLX 与 PyTorch 的差异感（lazy eval、unified memory）',
+          '能在 M5 Pro 上把任意 HF 模型转 MLX 格式跑起来',
+          '完成第一次 LoRA 微调，把"训练"祛魅',
+        ],
+        knowledge: [
+          'MLX 设计哲学：NumPy-like API + lazy 计算 + 自动多后端（CPU/Metal）',
+          'mx.array：和 numpy 几乎一样，但是 lazy 的',
+          'mx.eval() 何时触发：显式调用 / 转 numpy / 打印',
+          'Unified memory：CPU 和 GPU 共享 24GB，不需要 .to(device)',
+          'mlx-lm CLI：convert / generate / lora / fuse',
+          'HF → MLX 转换：weight 改名 + 量化（4bit / 8bit / fp16）',
+          'LoRA 基础：rank、alpha、target_modules 的物理含义',
+        ],
+        reading: [
+          { name: 'MLX 官方文档', url: 'https://ml-explore.github.io/mlx/build/html/index.html' },
+          { name: 'mlx-lm 仓库', url: 'https://github.com/ml-explore/mlx-lm' },
+          { name: 'mlx-examples 入门', url: 'https://github.com/ml-explore/mlx-examples' },
+          { name: 'Apple ML Research：MLX 介绍博客', url: 'https://machinelearning.apple.com/research/mlx' },
+        ],
+        experiments: [
+          'pip install mlx-lm && mlx_lm.convert --hf-path Qwen/Qwen2.5-7B-Instruct -q',
+          'mlx_lm.generate --model ./mlx_model --prompt "..." 测 tokens/sec',
+          '本地跑 LoRA：拿 100 条自己的对话数据微调出"个人风格"模型',
+          'mlx_lm.fuse 把 LoRA 合并回 base，再量化导出',
+        ],
+        deliverable: '本地小助手 demo：自己的 LoRA 微调模型 + 一篇上手笔记',
+        acceptance: '能给同事讲清楚"mx.eval 何时执行、为什么这样设计"',
+      },
+      {
+        week: 4.5, weeks: 'W3 – W5',
+        title: 'MLX 源码结构 + 自定义 Op',
+        detail: '读 lazy eval · 写第一个自定义 op',
+        goals: [
+          '从用户变成 MLX 内部贡献者，建立完整源码地图',
+          '掌握 MLX 计算图的构建与求值机制',
+          '能用 C++ + Python binding 注册一个跑通的自定义算子',
+        ],
+        knowledge: [
+          'MLX 架构分层：mlx.core (Python) → C++ (array/primitive) → backend (CPU/Metal)',
+          'Primitive 概念：每个算子是一个 Primitive 子类，实现 eval_cpu / eval_gpu / vjp / jvp',
+          '计算图构建：每次操作生成一个新 array，记录 inputs 与 primitive',
+          'Lazy evaluation 触发：mx.eval(arrays) 拓扑排序后调度执行',
+          'Compilation：mx.compile 把 trace 转成融合的子图',
+          'Python ↔ C++ binding：nanobind',
+          '自定义 op 三件套：C++ Primitive + Metal kernel + Python wrapper',
+        ],
+        reading: [
+          { name: 'mlx/mlx/array.h（C++ 核心类型）', url: 'https://github.com/ml-explore/mlx' },
+          { name: 'mlx/mlx/primitives.h（算子基类）', url: 'https://github.com/ml-explore/mlx' },
+          { name: 'mlx-examples/extensions（自定义扩展样例）', url: 'https://github.com/ml-explore/mlx-examples/tree/main/extensions' },
+          { name: 'mlx-lm 实现中的自定义 op 用例', url: 'https://github.com/ml-explore/mlx-lm' },
+        ],
+        experiments: [
+          'clone mlx 源码，用 CMake 本地编译 debug 版',
+          '画一张 array → primitive → eval 的调用序列图',
+          '照着 extensions 模板写一个 axpby (y = a*x + b*y) 算子',
+          '升级版：实现一个 fused RMSNorm，含 CPU + Metal 两个 backend',
+        ],
+        deliverable: 'GitHub repo: mlx-custom-ops，含 axpby + RMSNorm + 单测 + benchmark',
+        acceptance: '自定义 RMSNorm 在 M5 Pro 上比 mlx.nn.RMSNorm 快 ≥ 10%',
+      },
+      {
+        week: 7, weeks: 'W6 – W8',
+        title: 'Metal Kernel 深入',
+        detail: 'MSL 语法 · fused attention 实验',
+        goals: [
+          '从写算子升级到写 GPU kernel，进入 Apple Silicon ML 栈的最底层',
+          '掌握 Metal Shading Language 的内存模型与并行模型',
+          '能复现一个简化版 FlashAttention，理解 tile-based 计算',
+        ],
+        knowledge: [
+          'Metal 执行模型：threadgroup → simdgroup (32 thread) → thread',
+          '内存层级：device / threadgroup / thread 三级，threadgroup 是 shared memory',
+          'simdgroup_matrix：Apple 的 tensor core 等价物，16×16 矩阵原子操作',
+          'MSL 语法：buffer<T> [[buffer(N)]]、thread / threadgroup 修饰',
+          'Tile-based 算法：把大矩阵切成小 tile，提升 cache 命中',
+          'FlashAttention 思想：online softmax + IO-aware tiling，KV 不落回 HBM',
+          'Profiling：Xcode Metal capture 看 kernel 占用 / occupancy',
+        ],
+        reading: [
+          { name: 'Apple Metal Shading Language Specification（PDF）', url: 'https://developer.apple.com/metal/' },
+          { name: 'mlx/mlx/backend/metal/kernels/（MLX 自带 kernel 库）', url: 'https://github.com/ml-explore/mlx' },
+          { name: 'FlashAttention 论文（NeurIPS\'22）', url: 'https://arxiv.org/abs/2205.14135' },
+          { name: 'MLX 的 fast_attention 实现', url: 'https://github.com/ml-explore/mlx' },
+          { name: 'Philip Turner 的 Metal Flash Attention 项目', url: 'https://github.com/philipturner/metal-flash-attention' },
+        ],
+        experiments: [
+          '从最简单的开始：写一个 vector add Metal kernel，从 Python 调用',
+          '进阶：写 GEMM tile kernel，对比 naive vs tiled 的性能差',
+          '硬核：手撕一个简化版 FlashAttention（不要求超过 mlx.fast，目的是理解）',
+          '用 Xcode GPU capture 看自己 kernel 的 occupancy 与 bandwidth',
+        ],
+        deliverable: '自己的 metal-mini-fa 项目 + 一篇性能分析报告',
+        acceptance: '能解释为什么 tile size 选 64×64 而不是 32×32 或 128×128',
+      },
+      {
+        week: 10, weeks: 'W9 – W12',
+        title: 'MLX 技术博客 / PR',
+        detail: '一篇深度长文 · 中文圈差异化资产',
+        goals: [
+          '把前 8 周积累变成可见的公共资产，建立"MLX 专家"标签',
+          '走完一遍开源贡献完整流程，落地一个被 merge 的 PR',
+          '撬动机会：被社区/招聘官/出版社注意到',
+        ],
+        knowledge: [
+          'MLX 社区生态：mlx-vlm（多模态）/ mlx-graphs（GNN）/ mlx-swift',
+          'PR 候选区：mlx-lm 模型支持 / mlx-examples 新例子 / mlx 文档 / 性能 patch',
+          '技术博客写作：问题 → 现状 → 拆解 → 数据 → 启发，每段一个观点',
+          '题材选择：差异化（中英文都没人写过） > 时效（赶在版本发布前）',
+          'MLX 月度发布节奏：紧跟 release notes，第一时间写解读',
+        ],
+        reading: [
+          { name: 'mlx-vlm（视觉-语言扩展）', url: 'https://github.com/Blaizzy/mlx-vlm' },
+          { name: 'Awesome MLX 资源汇总', url: 'https://github.com/mlx-community' },
+          { name: 'MLX release notes 历史', url: 'https://github.com/ml-explore/mlx/releases' },
+        ],
+        experiments: [
+          '选题：从"我做了 X，发现 Y"开始，避免泛泛而谈',
+          '一篇 5000+ 字深度长文（推荐题：MLX lazy 求值机制 / Metal kernel 优化实战）',
+          '同步在中英文平台发：知乎专栏 + Medium / 个人博客',
+          'PR 选个真问题（不是文档错字），bonus: 配 benchmark 数据',
+        ],
+        deliverable: '一篇深度博客（≥ 5000 字含图）+ 一个 merged MLX 系 PR',
+        acceptance: '博客 ≥ 100 互动 或 PR merge，简历上"MLX contributor"成立',
+      },
+    ]
+  },
+  {
+    name: '云副本', en: 'CLOUD',
+    sub: 'A100 / H100 · 补齐生产实验',
+    color: PALETTE.cloud,
+    nodes: [
+      {
+        week: 4, weeks: 'W4',
+        title: 'vLLM 完整 benchmark',
+        detail: 'RunPod A100 · 吞吐 / TTFT / TPOT',
+        goals: [
+          '建立"推理性能"的定量直觉：什么是好的吞吐与延迟',
+          '掌握 LLM 服务的核心 SLO 指标体系',
+          '能给出"这台机器跑这个模型能扛多少 QPS"的答案',
+        ],
+        knowledge: [
+          '核心指标：TTFT（首 token 延迟）/ TPOT（每 token 延迟）/ ITL（间隔）',
+          '吞吐指标：tokens/sec、requests/sec、goodput（SLO 内的吞吐）',
+          '负载特征：shareGPT 是典型对话，prompt 短 / 输出长',
+          '基准工具：vllm.benchmarks.serve / bench-suite',
+          'SLO 容量规划：P99 TTFT < 200ms 下能承载几路并发',
+          '调参旋钮：max-num-seqs / max-num-batched-tokens / block-size',
+          '云端选型：A100 80G ≈ 1.99 USD/h（RunPod Spot），H100 ≈ 2.69 USD/h',
+        ],
+        reading: [
+          { name: 'vLLM benchmark_serving 文档', url: 'https://docs.vllm.ai/en/latest/getting_started/examples/offline_inference.html' },
+          { name: 'NVIDIA "Mastering LLM Techniques: Inference Optimization"', url: 'https://developer.nvidia.com/blog/mastering-llm-techniques-inference-optimization/' },
+          { name: 'Anyscale "Continuous Batching" 博客', url: 'https://www.anyscale.com/blog/continuous-batching-llm-inference' },
+        ],
+        experiments: [
+          'RunPod 起 1×A100 80G PCIe 实例（按小时计，做完销毁）',
+          'vLLM 起 Llama-3.1-8B-Instruct，跑 benchmark_serving 默认配置',
+          '改 --max-num-seqs 32 / 64 / 128 / 256，画吞吐曲线',
+          '改 --max-num-batched-tokens 看 prefill batch 对 TPOT 的影响',
+          '同样配置开/关 prefix caching，对比 multi-turn 场景',
+        ],
+        deliverable: 'Benchmark 报告：参数扫描表 + 三条核心曲线（throughput / TTFT / TPOT vs concurrency）',
+        acceptance: '给"P99 TTFT < 500ms"约束，能算出 Llama-8B 在单 A100 的安全并发数',
+      },
+      {
+        week: 8, weeks: 'W8',
+        title: 'Triton + FlashAttention-3',
+        detail: '写一个 Triton kernel · 对比 PyTorch',
+        goals: [
+          '掌握 Triton：当下最主流的 GPU kernel DSL，门槛远低于 CUDA',
+          '理解 FlashAttention 系列的 IO-aware 设计哲学',
+          '能写出一个性能接近 PyTorch native 的小 kernel',
+        ],
+        knowledge: [
+          'Triton 编程模型：program_id / BLOCK / tl.load / tl.store',
+          'Auto-tuning：@triton.autotune 自动选 BLOCK_M / BLOCK_N / num_warps',
+          'GPU 内存层级：HBM / L2 / SMEM / register',
+          'FlashAttention 核心：online softmax + 不落回 HBM',
+          'FA-1 → FA-2：并行化沿 seq_len 维度',
+          'FA-3：Hopper 专属（TMA + WGMMA + warp specialization）',
+          'Roofline 分析：算子是 compute-bound 还是 memory-bound',
+          'CUDA Graph：消除 kernel launch overhead',
+        ],
+        reading: [
+          { name: 'Triton 官方 tutorial（从 vector add 到 matmul）', url: 'https://triton-lang.org/main/getting-started/tutorials/index.html' },
+          { name: 'FlashAttention 论文（v1）', url: 'https://arxiv.org/abs/2205.14135' },
+          { name: 'FlashAttention-2 论文', url: 'https://arxiv.org/abs/2307.08691' },
+          { name: 'FlashAttention-3 论文（2024）', url: 'https://arxiv.org/abs/2407.08608' },
+          { name: 'Tri Dao 的 flash-attention 仓库', url: 'https://github.com/Dao-AILab/flash-attention' },
+        ],
+        experiments: [
+          'RunPod A100：跑通 Triton tutorial 全部 5 个例子',
+          '自己写 fused softmax（输入 [B, N]，对最后一维 softmax）',
+          '写 fused layernorm + matmul，比 PyTorch eager 至少快 1.3×',
+          '硬核：照着 Triton 官方的 fused attention 教程跑通简化版 FA',
+          '用 ncu / nsys 看 kernel 的 SM occupancy 与 memory bandwidth',
+        ],
+        deliverable: '一个 GitHub repo: triton-kernels-101，含 5 个自写 kernel + 性能对比表',
+        acceptance: '自写 fused softmax 在 [B=32, N=4096] 上 ≥ PyTorch 90% 性能',
+      },
+      {
+        week: 11.5, weeks: 'W11 – W12',
+        title: 'Tensor Parallel 实战',
+        detail: '2×A100 多卡 · 跑通 70B 推理',
+        goals: [
+          '从单卡跨入多卡世界，理解分布式推理的真实瓶颈',
+          '掌握 TP / PP / DP 三种并行的取舍',
+          '能给"这个模型 N 卡需要多少显存、加速比多少"算出答案',
+        ],
+        knowledge: [
+          'Tensor Parallel：把单层切到多卡，column-parallel + row-parallel',
+          'Column parallel：weight 按列切，输入复制，输出 concat（无通信）',
+          'Row parallel：weight 按行切，输入切，输出 all-reduce',
+          'Megatron 风格：QKV 用 column，O 用 row，FFN gate/up 用 column、down 用 row',
+          'All-reduce 成本：ring vs tree，带宽决定上限',
+          'NCCL 基础：NVLink (600GB/s) vs PCIe (64GB/s) vs InfiniBand',
+          'Pipeline Parallel：micro-batch + 1F1B 调度',
+          'Expert Parallel (MoE)：all-to-all 通信',
+          'vLLM 的 TP 实现：--tensor-parallel-size N',
+        ],
+        reading: [
+          { name: 'Megatron-LM 论文（2019）', url: 'https://arxiv.org/abs/1909.08053' },
+          { name: 'NVIDIA "Efficient Large-Scale Language Model Training" (Megatron-2)', url: 'https://arxiv.org/abs/2104.04473' },
+          { name: 'vllm/distributed/ 源码', url: 'https://github.com/vllm-project/vllm' },
+          { name: 'HuggingFace "Model Parallelism" 综述', url: 'https://huggingface.co/docs/transformers/v4.15.0/parallelism' },
+        ],
+        experiments: [
+          'RunPod 起 2×A100 80G 实例（注意机内 NVLink 拓扑）',
+          'vLLM --tensor-parallel-size 2 跑 Llama-3.1-70B-AWQ',
+          '对比 TP=1 单卡量化 vs TP=2 半精度的吞吐与质量',
+          '用 nccl-tests 测 all-reduce 带宽（确认硬件能力上限）',
+          '观察 GPU util：TP 是否被通信拖累',
+        ],
+        deliverable: 'TP 实战报告：包含通信瓶颈分析 + 多模型多并行度的性能矩阵',
+        acceptance: '能在白板上画出 TP=4 时 attention 层的 weight 切分与 all-reduce 位置',
+      },
+    ]
+  }
+];
+
+// === Canvas drawing ===
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  draw(w, h);
+}
+window.addEventListener('resize', resize);
+
+let nodeHits = [];  // {x, y, r, route, node}
+
+function drawBackground(w, h) {
+  const g = ctx.createRadialGradient(w*0.5, h*0.35, 0, w*0.5, h*0.5, w*0.8);
+  g.addColorStop(0, PALETTE.bg1);
+  g.addColorStop(1, PALETTE.bg0);
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.fillStyle = 'rgba(180,200,255,0.35)';
+  for (let i = 0; i < 80; i++) {
+    const x = (i * 9301 + 49297) % w;
+    const y = (i * 233280 + 7919) % h;
+    const r = ((i * 31) % 7) / 10 + 0.2;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+function drawTitle(w) {
+  ctx.textAlign = 'left';
+  ctx.fillStyle = PALETTE.text;
+  ctx.font = '600 32px "SF Pro Display", -apple-system, sans-serif';
+  ctx.fillText('LUMEN  ATELIER', 60, 60);
+
+  ctx.fillStyle = PALETTE.textDim;
+  ctx.font = '400 13px "SF Mono", monospace';
+  ctx.fillText('— 光之工坊 · 90 天 AI Infra 领跑路线图', 60, 82);
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = PALETTE.textFaint;
+  ctx.font = '400 11px "SF Mono", monospace';
+  const iso = new Date().toISOString().slice(0,10);
+  ctx.fillText(`START · ${iso}`, w - 60, 60);
+  ctx.fillText('M5 PRO · 18C · 20G · 24GB · 2TB', w - 60, 78);
+}
+
+function drawTimelineHeader(w, x0, x1, yTop) {
+  const usable = x1 - x0;
+  const monthColors = ['rgba(0,217,255,0.04)','rgba(255,184,77,0.04)','rgba(255,110,199,0.04)'];
+  for (let m = 0; m < 3; m++) {
+    const mx = x0 + (usable * m / 3);
+    const mw = usable / 3;
+    ctx.fillStyle = monthColors[m];
+    ctx.fillRect(mx, yTop, mw, 4);
+
+    ctx.fillStyle = PALETTE.textDim;
+    ctx.font = '600 12px "SF Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`MONTH ${m+1}`, mx + 12, yTop - 10);
+
+    ctx.fillStyle = PALETTE.textFaint;
+    ctx.font = '400 10px "SF Mono", monospace';
+    const labels = ['Foundations · 打基本功', 'Internals · 深入内核', 'Output · 输出 & 上榜'];
+    ctx.fillText(labels[m], mx + 12, yTop + 22);
+  }
+
+  ctx.strokeStyle = PALETTE.grid;
+  ctx.lineWidth = 1;
+  for (let wk = 0; wk <= 12; wk++) {
+    const tx = x0 + (usable * wk / 12);
+    ctx.beginPath();
+    ctx.moveTo(tx, yTop + 8);
+    ctx.lineTo(tx, yTop + 14);
+    ctx.stroke();
+    if (wk % 2 === 0) {
+      ctx.fillStyle = PALETTE.textFaint;
+      ctx.font = '400 9px "SF Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`W${wk}`, tx, yTop + 26);
+    }
+  }
+}
+
+function drawRoute(route, x0, x1, yCenter) {
+  const usable = x1 - x0;
+
+  // spine
+  const spineGrad = ctx.createLinearGradient(x0, yCenter, x1, yCenter);
+  spineGrad.addColorStop(0, 'rgba(42,48,80,0.2)');
+  spineGrad.addColorStop(0.5, route.color);
+  spineGrad.addColorStop(1, 'rgba(42,48,80,0.2)');
+  ctx.strokeStyle = spineGrad;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(x0, yCenter);
+  ctx.lineTo(x1, yCenter);
+  ctx.stroke();
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = route.color;
+  ctx.font = '600 22px "SF Pro Display", -apple-system, sans-serif';
+  ctx.fillText(route.name, x0 - 24, yCenter + 6);
+  ctx.fillStyle = PALETTE.textDim;
+  ctx.font = '500 10px "SF Mono", monospace';
+  ctx.fillText(route.en, x0 - 24, yCenter - 16);
+  ctx.fillStyle = PALETTE.textFaint;
+  ctx.font = '400 11px -apple-system, sans-serif';
+  ctx.fillText(route.sub, x0 - 24, yCenter + 24);
+
+  route.nodes.forEach((node, i) => {
+    const nx = x0 + (usable * node.week / 12);
+    const ny = yCenter;
+    const isHover = hoverNode && hoverNode.node === node;
+
+    const glowR = isHover ? 32 : 24;
+    const glow = ctx.createRadialGradient(nx, ny, 0, nx, ny, glowR);
+    glow.addColorStop(0, route.color + (isHover ? 'ee' : 'cc'));
+    glow.addColorStop(0.4, route.color + '33');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(nx, ny, glowR, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.strokeStyle = route.color;
+    ctx.lineWidth = isHover ? 2.5 : 1.5;
+    ctx.beginPath();
+    ctx.arc(nx, ny, isHover ? 11 : 9, 0, Math.PI*2);
+    ctx.stroke();
+
+    ctx.fillStyle = route.color;
+    ctx.beginPath();
+    ctx.arc(nx, ny, isHover ? 5.5 : 4.5, 0, Math.PI*2);
+    ctx.fill();
+
+    nodeHits.push({ x: nx, y: ny, r: 18, route, node });
+
+    const above = (i % 2 === 0);
+
+    ctx.font = '400 10px -apple-system, sans-serif';
+    const maxW = 190;
+    const words = node.detail.split(' · ');
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+      const test = line ? line + ' · ' + word : word;
+      if (ctx.measureText(test).width > maxW && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+
+    const lineH = 12;
+    const titleGap = 16;
+    const nodeGap = 24;
+    const connectorPad = 4;
+
+    let titleY, firstDetailY, connectorStartY, connectorEndY, weeksY;
+    if (above) {
+      const lastDetailY = ny - nodeGap;
+      firstDetailY = lastDetailY - (lines.length - 1) * lineH;
+      titleY = firstDetailY - titleGap;
+      weeksY = titleY - 14;
+      connectorStartY = ny - 10;
+      connectorEndY = lastDetailY + connectorPad;
+    } else {
+      weeksY = ny + nodeGap;
+      titleY = weeksY + 16;
+      firstDetailY = titleY + 14;
+      connectorStartY = ny + 10;
+      connectorEndY = weeksY - 6;
+    }
+
+    ctx.strokeStyle = route.color + '55';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(nx, connectorStartY);
+    ctx.lineTo(nx, connectorEndY);
+    ctx.stroke();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = route.color + 'cc';
+    ctx.font = '500 9px "SF Mono", monospace';
+    ctx.fillText(node.weeks, nx, weeksY);
+
+    ctx.fillStyle = PALETTE.text;
+    ctx.font = '600 12px -apple-system, sans-serif';
+    ctx.fillText(node.title, nx, titleY);
+
+    ctx.fillStyle = PALETTE.textFaint;
+    ctx.font = '400 10px -apple-system, sans-serif';
+    lines.forEach((ln, li) => {
+      ctx.fillText(ln, nx, firstDetailY + li * lineH);
+    });
+  });
+}
+
+function drawFooter(w, h) {
+  const fy = h - 110;
+  ctx.strokeStyle = 'rgba(120,140,200,0.12)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(60, fy); ctx.lineTo(w - 60, fy);
+  ctx.stroke();
+
+  const principles = [
+    { tag: '01', t: '读代码 > 看视频', d: 'vLLM / MLX 源码即教材 · 一周一个模块' },
+    { tag: '02', t: '本地实验 + 云补完', d: 'Mac 跑 7B 找手感 · A100 跑真实负载' },
+    { tag: '03', t: '产出大于消化',    d: '博客 / PR / Benchmark · 公开才算完成' },
+    { tag: '04', t: '差异化优先',      d: 'MLX 是别人没卷的赛道 · 优先占位' },
+  ];
+  const colW = (w - 120) / 4;
+  principles.forEach((p, i) => {
+    const px = 60 + colW * i;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = PALETTE.textFaint;
+    ctx.font = '500 11px "SF Mono", monospace';
+    ctx.fillText(p.tag, px, fy + 28);
+    ctx.fillStyle = PALETTE.text;
+    ctx.font = '600 14px -apple-system, sans-serif';
+    ctx.fillText(p.t, px, fy + 50);
+    ctx.fillStyle = PALETTE.textDim;
+    ctx.font = '400 11px -apple-system, sans-serif';
+    ctx.fillText(p.d, px, fy + 70);
+  });
+}
+
+let hoverNode = null;
+
+function draw(w, h) {
+  ctx.clearRect(0, 0, w, h);
+  nodeHits = [];
+  drawBackground(w, h);
+  drawTitle(w);
+
+  const x0 = 200;
+  const x1 = w - 80;
+  const yHeader = 130;
+  drawTimelineHeader(w, x0, x1, yHeader);
+
+  const lanesTop = 230;
+  const lanesBottom = h - 160;
+  const laneStep = (lanesBottom - lanesTop) / ROUTES.length;
+  ROUTES.forEach((route, i) => {
+    const yCenter = lanesTop + laneStep * i + laneStep / 2;
+    drawRoute(route, x0, x1, yCenter);
+  });
+
+  drawFooter(w, h);
+}
+
+// === Interaction ===
+function hitTest(mx, my) {
+  for (const h of nodeHits) {
+    const dx = mx - h.x, dy = my - h.y;
+    if (dx*dx + dy*dy < h.r*h.r) return h;
+  }
+  return null;
+}
+
+canvas.addEventListener('mousemove', (e) => {
+  const hit = hitTest(e.clientX, e.clientY);
+  const newHover = hit ? hit : null;
+  if (newHover !== hoverNode) {
+    hoverNode = newHover;
+    canvas.classList.toggle('hot', !!hoverNode);
+    draw(window.innerWidth, window.innerHeight);
+  }
+});
+
+canvas.addEventListener('click', (e) => {
+  const hit = hitTest(e.clientX, e.clientY);
+  if (hit) openPanel(hit.route, hit.node);
+});
+
+// === Panel ===
+const panel = document.getElementById('panel');
+const backdrop = document.getElementById('backdrop');
+
+function openPanel(route, node) {
+  panel.style.setProperty('--accent', route.color);
+  document.getElementById('p-meta').textContent = `${node.weeks}  ·  ${route.en}`;
+  document.getElementById('p-title').textContent = node.title;
+  document.getElementById('p-sub').textContent = route.sub;
+
+  const body = document.getElementById('p-body');
+  body.innerHTML = '';
+  body.appendChild(makeSection('学习目标', node.goals));
+  body.appendChild(makeSection('必修知识点', node.knowledge));
+  body.appendChild(makeReading('必读资料', node.reading));
+  body.appendChild(makeExperiments('动手实验', node.experiments));
+  body.appendChild(makeSection('交付物', [node.deliverable], 'deliver'));
+  body.appendChild(makeSection('验收标准', [node.acceptance], 'accept'));
+
+  panel.classList.add('open');
+  backdrop.classList.add('open');
+}
+
+function closePanel() {
+  panel.classList.remove('open');
+  backdrop.classList.remove('open');
+}
+
+function makeSection(title, items, cls = '') {
+  const s = document.createElement('div');
+  s.className = 'section ' + cls;
+  const h = document.createElement('h3'); h.textContent = title; s.appendChild(h);
+  const ul = document.createElement('ul');
+  items.forEach(it => {
+    const li = document.createElement('li');
+    li.textContent = it;
+    ul.appendChild(li);
+  });
+  s.appendChild(ul);
+  return s;
+}
+
+function makeReading(title, items) {
+  const s = document.createElement('div');
+  s.className = 'section reading';
+  const h = document.createElement('h3'); h.textContent = title; s.appendChild(h);
+  const ul = document.createElement('ul');
+  items.forEach(it => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = it.url; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = it.name;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+  s.appendChild(ul);
+  return s;
+}
+
+function makeExperiments(title, items) {
+  return makeSection(title, items, 'exp');
+}
+
+document.getElementById('close').addEventListener('click', closePanel);
+backdrop.addEventListener('click', closePanel);
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePanel();
+});
+
+resize();
+</script>
+</body>
+</html>

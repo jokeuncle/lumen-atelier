@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Lab · W1 llama.cpp 推理流程</title>
+<style>
+  :root {
+    --bg: #06090f; --bg2: #0e1424; --line: rgba(120,140,200,0.08);
+    --text: #e8eaed; --dim: #8892a8; --faint: #4a5268;
+    --accent: #00d9ff; --ok: #4ade80; --warn: #ffb84d;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, "SF Pro Display", "PingFang SC", sans-serif;
+    font-size: 14px; line-height: 1.6;
+  }
+  body {
+    background:
+      radial-gradient(ellipse at top, rgba(0,217,255,0.04), transparent 60%),
+      radial-gradient(ellipse at bottom, rgba(255,110,199,0.02), transparent 60%),
+      var(--bg);
+    min-height: 100vh;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 60px 40px 120px; }
+
+  header.top {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 28px; margin-bottom: 48px;
+  }
+  .eyebrow {
+    font-family: "SF Mono", ui-monospace, monospace;
+    font-size: 11px; letter-spacing: 2px; color: var(--accent);
+    text-transform: uppercase; margin-bottom: 10px;
+  }
+  h1 {
+    margin: 0; font-size: 32px; font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+  .sub { color: var(--dim); margin-top: 8px; font-size: 14px; }
+
+  .progress {
+    margin-top: 28px; display: flex; align-items: center; gap: 16px;
+  }
+  .bar {
+    flex: 1; height: 4px; background: rgba(120,140,200,0.08);
+    border-radius: 2px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), #4ade80);
+    width: 0%; transition: width .4s ease;
+    box-shadow: 0 0 16px var(--accent);
+  }
+  .pct {
+    font-family: "SF Mono", monospace; font-size: 12px;
+    color: var(--dim); min-width: 60px; text-align: right;
+  }
+
+  .phase {
+    margin-bottom: 56px;
+  }
+  .phase-head {
+    display: flex; align-items: baseline; gap: 14px;
+    margin-bottom: 8px;
+  }
+  .phase-num {
+    font-family: "SF Mono", monospace; font-size: 11px;
+    letter-spacing: 1.5px; color: var(--faint);
+  }
+  .phase-title {
+    font-size: 20px; font-weight: 600;
+  }
+  .phase-desc {
+    color: var(--dim); font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .exp {
+    background: rgba(13,18,38,0.6);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    transition: border-color .2s ease, transform .2s ease;
+  }
+  .exp.done {
+    border-color: rgba(74,222,128,0.25);
+    background: rgba(74,222,128,0.03);
+  }
+  .exp-head {
+    padding: 18px 22px; cursor: pointer;
+    display: flex; align-items: center; gap: 16px;
+    user-select: none;
+  }
+  .exp-head:hover { background: rgba(120,140,200,0.03); }
+  .exp.done .exp-head .title { color: var(--dim); text-decoration: line-through; }
+
+  .check {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid var(--faint);
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+    transition: all .15s ease;
+  }
+  .check::after {
+    content: ''; width: 8px; height: 8px;
+    border-radius: 50%; background: transparent;
+    transition: all .15s ease;
+  }
+  .exp.done .check {
+    border-color: var(--ok); background: rgba(74,222,128,0.1);
+  }
+  .exp.done .check::after { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+
+  .exp-head .title { flex: 1; font-weight: 500; font-size: 15px; }
+  .exp-head .tag {
+    font-family: "SF Mono", monospace; font-size: 10px;
+    letter-spacing: 1px; color: var(--faint);
+    padding: 3px 8px; border-radius: 3px;
+    background: rgba(120,140,200,0.06);
+  }
+  .exp-head .caret {
+    color: var(--faint); font-family: "SF Mono", monospace;
+    transition: transform .2s ease;
+  }
+  .exp.open .caret { transform: rotate(90deg); }
+
+  .exp-body {
+    display: none;
+    padding: 0 22px 22px 60px;
+    border-top: 1px solid var(--line);
+  }
+  .exp.open .exp-body { display: block; }
+
+  .goal {
+    color: var(--dim); font-size: 13px;
+    margin: 14px 0 18px; line-height: 1.7;
+  }
+  .goal strong { color: var(--text); font-weight: 600; }
+
+  pre.cmd {
+    background: #0a0e1a; border: 1px solid var(--line);
+    border-radius: 6px; padding: 12px 16px;
+    font-family: "SF Mono", ui-monospace, monospace;
+    font-size: 12.5px; color: #c8cfdb;
+    overflow-x: auto; margin: 12px 0;
+    position: relative;
+  }
+  pre.cmd .copy {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(120,140,200,0.08);
+    border: 1px solid var(--line); color: var(--dim);
+    font-size: 10px; padding: 3px 8px; border-radius: 3px;
+    cursor: pointer; font-family: "SF Mono", monospace;
+    letter-spacing: 1px;
+  }
+  pre.cmd .copy:hover { background: rgba(120,140,200,0.15); color: var(--text); }
+  pre.cmd .copy.copied { color: var(--ok); border-color: var(--ok); }
+
+  .hint {
+    font-size: 12px; color: var(--faint);
+    margin: 8px 0 16px; padding-left: 16px;
+    border-left: 2px solid rgba(120,140,200,0.15);
+    line-height: 1.7;
+  }
+
+  textarea {
+    width: 100%; min-height: 80px; margin-top: 12px;
+    background: rgba(10,14,26,0.6); color: var(--text);
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 10px 12px; font-family: inherit; font-size: 13px;
+    line-height: 1.6; resize: vertical;
+    transition: border-color .15s ease;
+  }
+  textarea:focus { outline: none; border-color: var(--accent); }
+  textarea::placeholder { color: var(--faint); }
+
+  .footer-actions {
+    margin-top: 60px; padding-top: 28px;
+    border-top: 1px solid var(--line);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .btn {
+    background: rgba(120,140,200,0.06);
+    border: 1px solid var(--line); color: var(--dim);
+    padding: 8px 16px; border-radius: 6px;
+    font-family: "SF Mono", monospace; font-size: 11px;
+    letter-spacing: 1px; cursor: pointer;
+    transition: all .15s ease;
+  }
+  .btn:hover { background: rgba(120,140,200,0.12); color: var(--text); }
+  .btn.danger:hover { color: #ff7c7c; border-color: rgba(255,124,124,0.3); }
+  .btn-spacer { flex: 1; }
+  .save-status {
+    font-family: "SF Mono", monospace; font-size: 10px;
+    color: var(--faint); letter-spacing: 1px;
+  }
+  .save-status.saved { color: var(--ok); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">LUMEN ATELIER · WEEK 01 · MAINLINE</div>
+  <h1>llama.cpp 推理流程</h1>
+  <div class="sub">在 M5 Pro 上跑通 Qwen2.5-7B-Q4，读懂 ggml 张量流，建立 LLM 推理的端到端心智模型。</div>
+  <div class="progress">
+    <div class="bar"><div class="bar-fill" id="bar"></div></div>
+    <div class="pct" id="pct">0 / 0</div>
+  </div>
+</header>
+
+<div id="phases"></div>
+
+<div class="footer-actions">
+  <button class="btn" id="export">导出 markdown</button>
+  <button class="btn danger" id="reset">清空进度</button>
+  <div class="btn-spacer"></div>
+  <div class="save-status" id="save-status">本地保存于 localStorage</div>
+</div>
+
+</div>
+
+<script>
+const PHASES = [
+  {
+    num: 'PHASE 1', title: '跑通 (Day 1–2)',
+    desc: '让 token 先在屏幕上出现。出 token 了你就有信心继续了。',
+    exps: [
+      {
+        id: 'run-setup',
+        title: '过目 setup.sh 并执行',
+        tag: 'shell',
+        goal: '<strong>不要盲跑脚本</strong>。打开看每一步在干什么 — brew、uv、模型下载，心里有数再 ENTER。',
+        cmd: 'cat setup.sh    # 先读\nbash setup.sh   # 再跑',
+      },
+      {
+        id: 'first-token',
+        title: '出第一个 token',
+        tag: 'llama-cli',
+        goal: '只要看见 token 流出来就算成功。<strong>记下 prefill 和 decode 的速度</strong>（屏幕底部会打印）。',
+        cmd: 'llama-cli -m ./models/Qwen2.5-7B-Instruct-Q4_K_M.gguf \\\n  -p "用一句话解释 KV cache 是什么。" \\\n  -n 128 --temp 0.7',
+        hint: '看输出末尾的 <code>prompt eval time</code>（prefill）和 <code>eval time</code>（decode）。两者 tokens/sec 差几十倍 — 这就是为什么 LLM 服务有 TTFT 和 TPOT 两个指标。',
+      },
+      {
+        id: 'gpu-vs-cpu',
+        title: '对比 ngl=0 与 ngl=99',
+        tag: 'metal vs cpu',
+        goal: '<strong>感受 Metal + unified memory 的威力</strong>。同样的模型同样的 prompt，仅切 GPU 层数。',
+        cmd: '# 纯 CPU\nllama-cli -m ./models/Qwen2.5-7B-Instruct-Q4_K_M.gguf -ngl 0 -p "Hi" -n 32\n\n# 全上 GPU\nllama-cli -m ./models/Qwen2.5-7B-Instruct-Q4_K_M.gguf -ngl 99 -p "Hi" -n 32',
+        hint: 'M5 Pro 的 unified memory 让 GPU 直接访问 weight，不像 N 卡需要 PCIe 拷贝。在你笔记本上记下提速倍数。',
+      },
+    ]
+  },
+  {
+    num: 'PHASE 2', title: '拆开看 (Day 3–7)',
+    desc: '从黑盒变白盒。GGUF、张量、tokenizer、源码主循环。',
+    exps: [
+      {
+        id: 'gguf-inspect',
+        title: '拆 GGUF 文件',
+        tag: 'tools/gguf_inspect.py',
+        goal: '<strong>把每一层有哪些张量、什么形状记到笔记里</strong>。重点看 attn_q / attn_k / attn_v / attn_output 的形状关系。',
+        cmd: 'source .venv/bin/activate\npython tools/gguf_inspect.py ./models/Qwen2.5-7B-Instruct-Q4_K_M.gguf\n\n# 只看 attention 相关张量\npython tools/gguf_inspect.py ./models/Qwen2.5-7B-Instruct-Q4_K_M.gguf --filter attn',
+        hint: '注意：Qwen2.5 用 GQA（Grouped Query Attention），<code>attn_k</code> 和 <code>attn_v</code> 的形状会比 <code>attn_q</code> 小。head_count_kv &lt; head_count 就是 GQA。',
+      },
+      {
+        id: 'tokenizer',
+        title: '玩 tokenizer',
+        tag: 'tools/tokenizer_play.py',
+        goal: '<strong>建立"一个 token 是什么"的直觉</strong>。试中文、英文、代码、emoji，记下压缩比。',
+        cmd: 'python tools/tokenizer_play.py "AI Infra 工程师在 2026 年的核心技能是什么？"\n\npython tools/tokenizer_play.py "def forward(x): return x @ self.W"\n\n# 交互模式\npython tools/tokenizer_play.py',
+        hint: '惊讶点：中文常常 1 字 = 1 token，但古文/生僻词 = 2-3 token。英文 caching 是 1 token，cached 可能拆成 cach + ed。',
+      },
+      {
+        id: 'read-source-loop',
+        title: '读 llama.cpp 主循环',
+        tag: 'source',
+        goal: '<strong>在 llama.cpp 仓库找到推理主循环</strong>，能口述一次 decode 从哪个函数开始到哪个函数结束。',
+        cmd: '# 浏览或 clone 后用 IDE 看\nopen https://github.com/ggml-org/llama.cpp/blob/master/src/llama.cpp\n\n# 关键函数（grep 找）：\n#   llama_decode_internal\n#   llm_build_context::append_pooling\n#   ggml_compute_forward_*',
+        hint: '别一上来读全文，<strong>从 examples/main/main.cpp 的 main 函数顺藤摸瓜</strong>，跟着 llama_decode 调进去。',
+      },
+      {
+        id: 'read-source-tensor',
+        title: '读 ggml_tensor 结构',
+        tag: 'source',
+        goal: '<strong>能默写出 ggml_tensor 的关键字段含义</strong>：ne[]、nb[]、type、op、src[]。',
+        cmd: '# 看 ggml/include/ggml.h 顶部的 struct ggml_tensor 定义\nopen https://github.com/ggml-org/ggml/blob/master/include/ggml.h',
+        hint: '<code>ne[GGML_MAX_DIMS]</code> 是每个维度的元素数；<code>nb[]</code> 是每个维度的字节 stride。stride 是为了支持 non-contiguous 视图。',
+      },
+    ]
+  },
+  {
+    num: 'PHASE 3', title: '量化与采样 (Day 8–11)',
+    desc: '把性能与质量量化下来。',
+    exps: [
+      {
+        id: 'bench',
+        title: '跑 benchmark sweep',
+        tag: 'tools/bench_sweep.sh',
+        goal: '<strong>得到一张属于你的 M5 Pro 性能基准表</strong>。reports/ 里会有 CSV。',
+        cmd: 'bash tools/bench_sweep.sh\n\n# 看结果\nls -la reports/\ncat reports/bench-*.csv',
+        hint: '把 pp512 与 tg128 两栏对比 — prefill 通常是 decode 的 20-50 倍吞吐。理解了这一点你就理解了 vLLM continuous batching 为什么是革命。',
+      },
+      {
+        id: 'perplexity',
+        title: '量化质量评估',
+        tag: 'llama-perplexity',
+        goal: '<strong>用 wikitext 评估 Q4 模型的 perplexity</strong>，记下数值。下周对比 FP16 时有基线。',
+        cmd: '# 下载 wikitext (约 4MB)\nwget -P data/ https://huggingface.co/datasets/Salesforce/wikitext/resolve/main/wikitext-2-raw-v1/test-00000-of-00001.parquet\n\n# 实际更简单：用 llama.cpp 自带 wiki.test.raw\nwget -P data/ https://github.com/ggml-org/llama.cpp/raw/master/scripts/wikitext-2-raw.zip\nunzip -d data/ data/wikitext-2-raw.zip\n\nllama-perplexity -m ./models/Qwen2.5-7B-Instruct-Q4_K_M.gguf \\\n  -f data/wikitext-2-raw/wiki.test.raw -c 2048',
+        hint: '跑完看 PPL 数值。Qwen2.5-7B-Q4 在 wikitext 上通常 6-8 之间。如果 &gt;15 说明量化有问题。',
+      },
+      {
+        id: 'sampling',
+        title: '采样参数实验',
+        tag: 'llama-cli',
+        goal: '<strong>同一个 prompt × 不同采样参数</strong>，肉眼感受 temperature / top-p 的作用。',
+        cmd: 'PROMPT="写一句关于秋天的诗。"\nM=./models/Qwen2.5-7B-Instruct-Q4_K_M.gguf\n\n# 贪心（最保守）\nllama-cli -m $M -p "$PROMPT" -n 64 --temp 0 --seed 42\n\n# 高温（最发散）\nllama-cli -m $M -p "$PROMPT" -n 64 --temp 1.5 --seed 42\n\n# top-p 截断\nllama-cli -m $M -p "$PROMPT" -n 64 --temp 1.0 --top-p 0.3 --seed 42',
+        hint: 'temperature → 缩放 logits 后 softmax；top-p → 只在累积概率前 p% 的候选里采样。前者改"分布形状"，后者改"候选集合"。',
+      },
+    ]
+  },
+  {
+    num: 'PHASE 4', title: '交付 (Day 12–14)',
+    desc: '把这两周的脑子里的东西落到 notes.md 里 — 2000 字以上。',
+    exps: [
+      {
+        id: 'whiteboard',
+        title: '白板挑战：画张量流',
+        tag: 'deliverable',
+        goal: '关掉电脑，<strong>在白纸/白板上画出 prefill 和 decode 两阶段的张量流图</strong>。能画出来就过了。画不出来回去再读。',
+        cmd: '# 没有命令。拿张纸。\n# 画的时候问自己：\n#   - input_ids shape?\n#   - 经过 embed 后 shape?\n#   - 进入第一层 attention，Q/K/V shape?\n#   - KV cache 在 prefill 与 decode 各是什么形状？\n#   - 最后 unembed 输出的 logits shape?',
+      },
+      {
+        id: 'notes',
+        title: '完成 notes.md（≥2000 字）',
+        tag: 'deliverable',
+        goal: '<strong>这是这周的交付物</strong>。题目：《llama.cpp 一次 forward 都做了什么》。模板已经给你了 — 填进去就行。',
+        cmd: 'open notes.md\n\n# 写完后：\n#  - 发到知乎专栏 / 个人博客\n#  - 配上 gguf_inspect 与 tokenizer_play 的输出截图',
+        hint: '别追求完美，追求"未来的自己看了会受益"。三个月后你回头看会发现这就是你的"领跑"证据。',
+      },
+    ]
+  }
+];
+
+// ───── render ─────
+const KEY = 'lumen-w1-v1';
+const state = JSON.parse(localStorage.getItem(KEY) || '{}');
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(state));
+  const s = document.getElementById('save-status');
+  s.textContent = '已保存 · ' + new Date().toLocaleTimeString();
+  s.classList.add('saved');
+  clearTimeout(window._saveT);
+  window._saveT = setTimeout(() => {
+    s.textContent = '本地保存于 localStorage';
+    s.classList.remove('saved');
+  }, 1500);
+}
+
+function totalExps() {
+  return PHASES.reduce((acc, p) => acc + p.exps.length, 0);
+}
+function doneExps() {
+  let n = 0;
+  for (const p of PHASES) for (const e of p.exps) if (state[e.id]?.done) n++;
+  return n;
+}
+function updateProgress() {
+  const t = totalExps(), d = doneExps();
+  document.getElementById('bar').style.width = (t ? d*100/t : 0) + '%';
+  document.getElementById('pct').textContent = `${d} / ${t}`;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function render() {
+  const root = document.getElementById('phases');
+  root.innerHTML = '';
+  for (const phase of PHASES) {
+    const sec = document.createElement('section');
+    sec.className = 'phase';
+    sec.innerHTML = `
+      <div class="phase-head">
+        <div class="phase-num">${phase.num}</div>
+        <div class="phase-title">${phase.title}</div>
+      </div>
+      <div class="phase-desc">${phase.desc}</div>
+    `;
+    for (const exp of phase.exps) {
+      const s = state[exp.id] || {};
+      const div = document.createElement('div');
+      div.className = 'exp' + (s.done ? ' done' : '') + (s.open ? ' open' : '');
+      div.innerHTML = `
+        <div class="exp-head">
+          <div class="check" data-action="toggle-done"></div>
+          <div class="title">${exp.title}</div>
+          <div class="tag">${exp.tag}</div>
+          <div class="caret">›</div>
+        </div>
+        <div class="exp-body">
+          <div class="goal">${exp.goal}</div>
+          <pre class="cmd"><button class="copy">COPY</button>${escapeHtml(exp.cmd)}</pre>
+          ${exp.hint ? `<div class="hint">💡 ${exp.hint}</div>` : ''}
+          <textarea placeholder="你的笔记 · 观察 · 困惑 · 数据..." data-note="${exp.id}">${escapeHtml(s.note || '')}</textarea>
+        </div>
+      `;
+      // events
+      const head = div.querySelector('.exp-head');
+      const check = div.querySelector('.check');
+      check.addEventListener('click', (e) => {
+        e.stopPropagation();
+        state[exp.id] = { ...(state[exp.id]||{}), done: !s.done };
+        save(); render();
+      });
+      head.addEventListener('click', () => {
+        state[exp.id] = { ...(state[exp.id]||{}), open: !s.open };
+        save(); render();
+      });
+      const ta = div.querySelector('textarea');
+      ta.addEventListener('input', () => {
+        state[exp.id] = { ...(state[exp.id]||{}), note: ta.value };
+        save();
+      });
+      const copyBtn = div.querySelector('.copy');
+      copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navigator.clipboard.writeText(exp.cmd);
+        copyBtn.textContent = 'COPIED';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = 'COPY';
+          copyBtn.classList.remove('copied');
+        }, 1500);
+      });
+      sec.appendChild(div);
+    }
+    root.appendChild(sec);
+  }
+  updateProgress();
+}
+
+document.getElementById('reset').addEventListener('click', () => {
+  if (confirm('清空所有进度和笔记？')) {
+    localStorage.removeItem(KEY);
+    for (const k in state) delete state[k];
+    render();
+  }
+});
+
+document.getElementById('export').addEventListener('click', () => {
+  let md = `# Week 01 Lab — llama.cpp 推理流程\n\n_导出时间: ${new Date().toLocaleString()}_\n\n`;
+  for (const p of PHASES) {
+    md += `\n## ${p.title}\n\n`;
+    for (const e of p.exps) {
+      const s = state[e.id] || {};
+      md += `### ${s.done ? '✓' : '☐'} ${e.title}\n\n`;
+      if (s.note) md += `${s.note}\n\n`;
+    }
+  }
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `lab-w1-export-${Date.now()}.md`;
+  a.click();
+});
+
+render();
+</script>
+</body>
+</html>

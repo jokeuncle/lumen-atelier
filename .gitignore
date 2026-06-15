@@ -1,0 +1,29 @@
+# ── 模型 ──────────────────────────────────────
+# 4GB+ 的 GGUF 不能进 git。bench_sweep / lab.html 会重新下载。
+**/models/*.gguf
+**/models/.cache/
+**/data/
+
+# ── Python ───────────────────────────────────
+**/.venv/
+**/__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.python-version
+
+# ── 实验结果 ─────────────────────────────────
+# 报告里包含 Mac-specific 数字，且体积可能巨大。本地保留即可。
+**/reports/*.csv
+**/reports/*.json
+
+# ── 编辑器 / OS ──────────────────────────────
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── HuggingFace 缓存 ─────────────────────────
+.cache/
+hub/
