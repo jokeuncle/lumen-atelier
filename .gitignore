@@ -27,3 +27,11 @@
 # ── HuggingFace 缓存 ─────────────────────────
 .cache/
 hub/
+
+# ── 学习保障系统 ─────────────────────────────
+# digest 每日产物与日志本地保留，不入库（ledger 才是事实源）
+learning/digests/
+# 导出产物（源文件是 .md，图片/PDF 是博客仓库的事）
+ai-infra-*.png
+ai-infra-*.pdf
+.playwright-mcp/
