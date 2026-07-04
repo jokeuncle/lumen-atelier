@@ -16,11 +16,14 @@
 |---|---|---|---|---|---|
 | 2026-06-18 | Day 1-2 | 环境搭建 + 模型下载启动 | commit f9093ce · setup.sh 幂等可重跑 | 4 | - |
 | 2026-07-04 | Day 3-4 | 模型续传补全 4.4GB · llama-completion 冒烟通过（prefill 110-257 t/s / decode 25 t/s）· gguf_inspect + 手写 gguf_handparse.py 拆完 GGUF（GQA 28:4 · 非 tied embedding · Q4_K/Q6_K/F32 分布） | tools/gguf_handparse.py · 全景图+数学图两篇博客已发布 | 3 | W1-Q1 待验收 |
-| 2026-07-04 | Day 5 | 追通 main→decode 调用链。**注：讲义由 Claude 代读源码产出，用户尚未消化** — 用户读讲义 + 通过 W1-Q3 验收后此条才算数 | week-01-llama-cpp/notes/day5-call-chain.md | 待定 | W1-Q3 未验收 |
+| 2026-07-04 | Day 5 | 追通 main→decode 调用链（讲义 Claude 代产）。晚间消化：拼车/KV cache 两个检查问题自主答对；验收 W1-Q3 部分通过、W1-Q1 不通过 | week-01-llama-cpp/notes/day5-call-chain.md · 本次验收记录 | 2 | W1-Q3 🟡 · W1-Q1 ❌ |
 
 ## 欠账区（跳过待补）
 
-（空）
+| 记入日期 | 欠什么 | 薄弱点 | 还账方式 |
+|---|---|---|---|
+| 2026-07-04 | W1-Q3（部分） | tokenize 的词表 vs embedding 的权重表分不清（"先查字典拿号，再凭号取衣服"） | 下次验收复问追问 1，脱口而出即销账 |
+| 2026-07-04 | W1-Q1（全题） | GGUF 三段布局完全答不出——Day 3-4 的拆解是 Claude 代做的，知识没进脑子 | 自己重跑 gguf_handparse.py 并对照输出读一遍讲解，然后重考全题 |
 
 ## 验收通过记录
 
