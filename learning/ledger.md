@@ -23,7 +23,7 @@
 | 记入日期 | 欠什么 | 薄弱点 | 还账方式 |
 |---|---|---|---|
 | 2026-07-04 | W1-Q3（部分） | tokenize 的词表 vs embedding 的权重表分不清（"先查字典拿号，再凭号取衣服"） | 下次验收复问追问 1，脱口而出即销账 |
-| 2026-07-04 | W1-Q1（全题） | GGUF 三段布局完全答不出——Day 3-4 的拆解是 Claude 代做的，知识没进脑子 | 自己重跑 gguf_handparse.py 并对照输出读一遍讲解，然后重考全题 |
+| 2026-07-04 | W1-Q1（全题） | 2026-07-06 复问：能说出 header/tensor info/tensor data，但漏 metadata KV；alignment 方向对；tensor offset 误认为相对文件第 0 字节 | 自己重跑 gguf_handparse.py 并对照输出读一遍讲解，然后重考全题 |
 
 ## 验收通过记录
 
