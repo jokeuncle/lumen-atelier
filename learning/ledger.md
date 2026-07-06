@@ -16,7 +16,7 @@
 |---|---|---|---|---|---|
 | 2026-06-18 | Day 1-2 | 环境搭建 + 模型下载启动 | commit f9093ce · setup.sh 幂等可重跑 | 4 | - |
 | 2026-07-04 | Day 3-4 | 模型续传补全 4.4GB · llama-completion 冒烟通过（prefill 110-257 t/s / decode 25 t/s）· gguf_inspect + 手写 gguf_handparse.py 拆完 GGUF（GQA 28:4 · 非 tied embedding · Q4_K/Q6_K/F32 分布） | tools/gguf_handparse.py · 全景图+数学图两篇博客已发布 | 3 | W1-Q1 ✅（经提示） |
-| 2026-07-04 | Day 5 | 追通 main→decode 调用链（讲义 Claude 代产）。晚间消化：拼车/KV cache 两个检查问题自主答对；验收 W1-Q3 部分通过、W1-Q1 不通过 | week-01-llama-cpp/notes/day5-call-chain.md · 本次验收记录 | 2 | W1-Q3 ✅（7/6 追问通过） · W1-Q1 ✅（7/6 经提示） |
+| 2026-07-04 | Day 5 | 追通 main→decode 调用链（讲义 Claude 代产）。晚间消化：拼车/KV cache 两个检查问题自主答对；验收 W1-Q3 部分通过、W1-Q1 不通过 | week-01-llama-cpp/notes/day5-call-chain.md · Day5 技术总结博客 https://jokeuncle.github.io/blog/llama-cpp-day5-prefill-decode-call-chain/ · 本次验收记录 | 2 | W1-Q3 ✅（7/6 追问通过） · W1-Q1 ✅（7/6 经提示） |
 
 ## 欠账区（跳过待补）
 
