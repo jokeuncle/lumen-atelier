@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" role="img" aria-labelledby="title desc">
+  <title id="title">RoPE 二维旋转公式示意图</title>
+  <desc id="desc">向量从 v=(x,y) 旋转 theta 角到 v'=(x',y')，右侧展示二维旋转公式。</desc>
+  <defs>
+    <marker id="arrow-dark" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#1f2937"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-red" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#dc2626"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="1100" height="620" fill="#f8fafc"/>
+  <rect x="26" y="24" width="1048" height="572" rx="18" fill="#ffffff" filter="url(#shadow)"/>
+
+  <text x="60" y="72" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="30" font-weight="700" fill="#111827">RoPE 的核心：二维坐标旋转</text>
+  <text x="60" y="108" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18" fill="#475569">把 (x, y) 按位置角度 theta 旋转成 (x', y')，x/y 会互相混合。</text>
+
+  <g transform="translate(0,0)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <line x1="90" y1="448" x2="606" y2="448" stroke="#1f2937" stroke-width="2.2" marker-end="url(#arrow-dark)"/>
+    <line x1="160" y1="520" x2="160" y2="146" stroke="#1f2937" stroke-width="2.2" marker-end="url(#arrow-dark)"/>
+    <text x="616" y="455" font-size="18" fill="#111827">x</text>
+    <text x="150" y="136" font-size="18" fill="#111827">y</text>
+    <text x="143" y="470" font-size="16" fill="#64748b">O</text>
+
+    <g stroke="#e2e8f0" stroke-width="1">
+      <line x1="160" y1="388" x2="592" y2="388"/>
+      <line x1="160" y1="328" x2="592" y2="328"/>
+      <line x1="160" y1="268" x2="592" y2="268"/>
+      <line x1="160" y1="208" x2="592" y2="208"/>
+      <line x1="220" y1="448" x2="220" y2="160"/>
+      <line x1="280" y1="448" x2="280" y2="160"/>
+      <line x1="340" y1="448" x2="340" y2="160"/>
+      <line x1="400" y1="448" x2="400" y2="160"/>
+      <line x1="460" y1="448" x2="460" y2="160"/>
+      <line x1="520" y1="448" x2="520" y2="160"/>
+    </g>
+
+    <line x1="398" y1="322" x2="398" y2="448" stroke="#93c5fd" stroke-width="2" stroke-dasharray="7 7"/>
+    <line x1="160" y1="322" x2="398" y2="322" stroke="#93c5fd" stroke-width="2" stroke-dasharray="7 7"/>
+    <text x="384" y="472" font-size="18" fill="#2563eb">x</text>
+    <text x="128" y="328" font-size="18" fill="#2563eb">y</text>
+
+    <line x1="244" y1="202" x2="244" y2="448" stroke="#fca5a5" stroke-width="2" stroke-dasharray="7 7"/>
+    <line x1="160" y1="202" x2="244" y2="202" stroke="#fca5a5" stroke-width="2" stroke-dasharray="7 7"/>
+    <text x="232" y="472" font-size="18" fill="#dc2626">x'</text>
+    <text x="123" y="208" font-size="18" fill="#dc2626">y'</text>
+
+    <line x1="160" y1="448" x2="398" y2="322" stroke="#2563eb" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow-blue)"/>
+    <line x1="160" y1="448" x2="244" y2="202" stroke="#dc2626" stroke-width="5" stroke-linecap="round" marker-end="url(#arrow-red)"/>
+    <text x="412" y="318" font-size="20" font-weight="700" fill="#2563eb">v = (x, y)</text>
+    <text x="258" y="198" font-size="20" font-weight="700" fill="#dc2626">v' = (x', y')</text>
+
+    <path d="M 238 407 A 92 92 0 0 0 190 360" fill="none" stroke="#7c3aed" stroke-width="4"/>
+    <text x="236" y="384" font-size="22" font-weight="700" fill="#7c3aed">theta</text>
+
+    <rect x="82" y="532" width="544" height="42" rx="10" fill="#eef2ff"/>
+    <text x="104" y="559" font-size="18" fill="#312e81">看图要点：旋转后的 x' 同时用到原来的 x 和 y；y' 也同时用到 x 和 y。</text>
+  </g>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <rect x="680" y="146" width="350" height="364" rx="16" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="710" y="190" font-size="24" font-weight="700" fill="#111827">二维旋转公式</text>
+    <text x="710" y="236" font-size="22" fill="#111827">x' = x*cos(theta) - y*sin(theta)</text>
+    <text x="710" y="280" font-size="22" fill="#111827">y' = x*sin(theta) + y*cos(theta)</text>
+
+    <line x1="710" y1="314" x2="1000" y2="314" stroke="#cbd5e1"/>
+
+    <text x="710" y="354" font-size="18" font-weight="700" fill="#334155">为什么不是各自缩放？</text>
+    <text x="710" y="390" font-size="17" fill="#475569">如果只是缩放：</text>
+    <text x="730" y="420" font-size="17" fill="#475569">x' 只看 x，y' 只看 y。</text>
+    <text x="710" y="458" font-size="17" fill="#475569">真正旋转时：</text>
+    <text x="730" y="488" font-size="17" fill="#475569">x' 和 y' 都同时混合 x、y。</text>
+  </g>
+</svg>
