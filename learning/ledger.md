@@ -21,6 +21,7 @@
 | 2026-07-07 | Day 6 补强 | QKV 投影专项讲解：从 Query/Key/Value 角色、矩阵乘、shape 推导、GQA 28:4 到 llama.cpp build_qkv 源码对应，写成小白向博客 | docs/blog/2026-07-07-qkv-projection-math.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-07-qkv-projection-math/ · source commit bafc679 · blog commit dbb43e7 | 3 | W1-Q4 待验收 |
 | 2026-07-07 | Day 6 补强 | RoPE 专项讲解：从二维旋转公式、128 维 head 拆成 64 对坐标、位置角度 theta、相对位置进入 QK 点积，到 llama.cpp ggml_rope_ext 源码对应，写成小白向博客 | docs/blog/2026-07-07-rope-rotation-math.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-07-rope-rotation-math/ · source commit 038a6ee · blog commit 60c5d50 | 3 | W1-Q4 待验收 |
 | 2026-07-07 | Day 6 补强 | RoPE 二维旋转图补强：新增 SVG 图解释二维旋转不是分别缩放，而是 x/y 交叉混合，并同步更新公开博客 | docs/blog/assets/rope-2d-rotation.svg · docs/blog/2026-07-07-rope-rotation-math.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-07-rope-rotation-math/ · source commit 3a90493 · blog commit d5fb81f | 3 | W1-Q4 待验收 |
+| 2026-07-07 | Day 6 补强 | RoPE 数学地基补强：在博客中先补 cos/sin 的横向/纵向直觉，再从基础箭头推导二维旋转公式；同时更新发布 skill，要求数学类学习博客先补最小前置知识 | docs/blog/2026-07-07-rope-rotation-math.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-07-rope-rotation-math/ · source commit e6683ea · blog commit 6466cd4 · local skill publish-to-lei-blog/SKILL.md | 3 | W1-Q4 待验收 |
 
 ## 欠账区（跳过待补）
 
