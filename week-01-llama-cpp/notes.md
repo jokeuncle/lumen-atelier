@@ -46,6 +46,17 @@
 - 为什么 LLM 用 token 计费而不是字符
 - 一个 token 的"语义大小"是上下文相关的
 
+### 3.1 tokenizer_play 实测数据
+
+| 样本 | 字符数 | UTF-8 字节 | token 数 | BPE 切碎字符 | 压缩比 |
+|---|---:|---:|---:|---:|---:|
+| `你好，今天我们继续学习 AI Infra。` | 21 | 45 | 9 | 0 | 2.33 字符/token |
+| `Today we continue learning AI infrastructure.` | 45 | 45 | 7 | 0 | 6.43 字符/token |
+| `def hello(name): return f"hello {name}"` | 39 | 39 | 11 | 0 | 3.55 字符/token |
+| `AI Infra 🚀🔥` | 11 | 17 | 7 | 1 | 1.57 字符/token |
+
+备注：`AutoTokenizer.vocab_size` 输出为 151643；模型配置/输出矩阵里的 vocab 行数可能是 152064，后面写 `output.weight` 时要区分这两个口径。
+
 ---
 
 ## 4. Forward Pass：张量从输入到输出
