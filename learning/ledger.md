@@ -24,6 +24,7 @@
 | 2026-07-07 | Day 6 补强 | RoPE 数学地基补强：在博客中先补 cos/sin 的横向/纵向直觉，再从基础箭头推导二维旋转公式；同时更新发布 skill，要求数学类学习博客先补最小前置知识 | docs/blog/2026-07-07-rope-rotation-math.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-07-rope-rotation-math/ · source commit e6683ea · blog commit 6466cd4 · local skill publish-to-lei-blog/SKILL.md | 3 | W1-Q4 ✅（7/8 追问通过） |
 | 2026-07-07 | Day 6 补强 | masked softmax 专项讲解：从 softmax 的 exp/求和/归一化数学地基、causal mask 禁止未来 token、手算权重，到 GQA 下 score/weight/V 的 shape 和 ggml attention graph 对应，写成小白向博客 | docs/blog/2026-07-07-masked-softmax-attention.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-07-masked-softmax-attention/ · source commit ca92743 · blog commit fa623c6 | 3 | W1-Q4 ✅（7/8 追问通过） |
 | 2026-07-08 | Day 6 补强 | out 投影专项讲解：从多头 attention 结果的混音台直觉、维度不变但信息混合的小数字矩阵乘，到 Qwen2.5-7B 的 attn_output.weight 与最终 output.weight 区分，补齐 W1-Q4 最后一块 | docs/blog/2026-07-08-attention-out-projection.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-08-attention-out-projection/ · source commit e8c9959 · blog commit bf1b82f | 3 | W1-Q4 ✅（7/8 追问通过） |
+| 2026-07-08 | Day 7 | tokenizer_play.py 跑中文/英文/代码/emoji 4 组样本，记录字符数、UTF-8 字节、token 数、压缩比；发布 BPE 与 token 计费深度讲解 | week-01-llama-cpp/notes.md 第 3 节 · docs/blog/2026-07-08-bpe-tokenizer-billing.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-08-bpe-tokenizer-billing/ · source commit 50ce2f0 · blog commit eab4849 | 3 | W1-Q2 待验收 |
 
 ## 欠账区（跳过待补）
 
