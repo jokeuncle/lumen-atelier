@@ -25,6 +25,7 @@
 | 2026-07-07 | Day 6 补强 | masked softmax 专项讲解：从 softmax 的 exp/求和/归一化数学地基、causal mask 禁止未来 token、手算权重，到 GQA 下 score/weight/V 的 shape 和 ggml attention graph 对应，写成小白向博客 | docs/blog/2026-07-07-masked-softmax-attention.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-07-masked-softmax-attention/ · source commit ca92743 · blog commit fa623c6 | 3 | W1-Q4 ✅（7/8 追问通过） |
 | 2026-07-08 | Day 6 补强 | out 投影专项讲解：从多头 attention 结果的混音台直觉、维度不变但信息混合的小数字矩阵乘，到 Qwen2.5-7B 的 attn_output.weight 与最终 output.weight 区分，补齐 W1-Q4 最后一块 | docs/blog/2026-07-08-attention-out-projection.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-08-attention-out-projection/ · source commit e8c9959 · blog commit bf1b82f | 3 | W1-Q4 ✅（7/8 追问通过） |
 | 2026-07-08 | Day 7 | tokenizer_play.py 跑中文/英文/代码/emoji 4 组样本，记录字符数、UTF-8 字节、token 数、压缩比；发布 BPE 与 token 计费深度讲解 | week-01-llama-cpp/notes.md 第 3 节 · docs/blog/2026-07-08-bpe-tokenizer-billing.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-08-bpe-tokenizer-billing/ · source commit 50ce2f0 · blog commit eab4849 | 3 | W1-Q2 待验收 |
+| 2026-07-09 | Day 8 | KV cache 账专项讲解：拆清 layers × 2(K+V) × batch × KV_heads × seq × head_dim × bytes，手算 Qwen2.5-7B @2048 的 117.4MB、无 GQA 约 822MB、100 并发约 11.7GB | docs/blog/2026-07-09-kv-cache-memory.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-09-kv-cache-memory/ · source commit 99d2561 · blog commit c32fd87 | 3 | W1-Q5 待验收 |
 
 ## 欠账区（跳过待补）
 
