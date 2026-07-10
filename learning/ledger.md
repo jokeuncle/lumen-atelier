@@ -32,6 +32,7 @@
 | 2026-07-10 | Day 10 | llama-perplexity 跑 WikiText-2 validation 小基线：Qwen2.5-7B Q4_K_M 在 ctx=512/chunks=16 下 PPL=6.8790±0.30335；补写 PPL/交叉熵/量化质量评估小白向讲解并发布博客 | week-01-llama-cpp/reports/ppl-day10-summary.md · docs/blog/2026-07-10-perplexity-ppl-explained.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-10-perplexity-ppl-explained/ · source commit 428c15b · blog commit 1c9790a | 2 | W2-Q3 待验收 |
 | 2026-07-10 | Day 10 补强 | 交叉熵数学动机补强：从整段文本概率连乘、浮点下溢、log 把乘法变加法、负 log 变 loss、ln/exp 与 softmax/梯度优化配合，到 PPL 还原为平均有效岔路数 | docs/blog/2026-07-10-why-log-cross-entropy-ppl.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-10-why-log-cross-entropy-ppl/ · source commit 0b71006 · blog commit 9bebe93 | 2 | W2-Q3 待验收 |
 | 2026-07-10 | Day 10 补强 | “换空间”数学方法论补强：把 log、embedding、RoPE、量化、LoRA 统一到“原空间痛点→目标空间收益→代价→下游使用”的思维框架，并整理成十大思维检查表和日常练习法 | docs/blog/2026-07-10-change-of-space-math-muscle-memory.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-10-change-of-space-math-muscle-memory/ · source commit fb92fb8 · blog commit 65210f4 | 3 | W2-Q3 待验收 |
+| 2026-07-10 | Day 10 补强 | 数学恐惧与探索路径方法论：从 Euclid/Euler/Gauss/Riemann/Noether/Poincare/Hilbert/Grothendieck/von Neumann/Ramanujan/Tao 的思维动作中，提炼“问题→对象→空间→不变量→证明/计算→验证”的可训练路径 | docs/blog/2026-07-10-mathematical-mindset-path.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-10-mathematical-mindset-path/ · source commit 63ac730 · blog commit f289c37 | 3 | W2-Q3 待验收 |
 
 ## 欠账区（跳过待补）
 
