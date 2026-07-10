@@ -29,6 +29,7 @@
 | 2026-07-09 | Day 8 | decode 速度上限公式专项讲解：用 bench 的 4.677GB 模型大小和 16.99 tok/s 反推有效权重读取约 79.5GB/s，并解释 150GB/s 带宽下理想上限约 32.1 tok/s、真实开销来自反量化/KV cache/kernel 调度/小 batch | docs/blog/2026-07-09-decode-bandwidth-limit.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-09-decode-bandwidth-limit/ · source commit 03ca922 · blog commit 8f45a4e | 3 | W2-Q1 待验收 |
 | 2026-07-09 | 网络排障补充 | DNS / fake-ip / TUN / HTTP 代理 / TLS 握手 / GitHub Pages 节点链路排障复盘：用本机 jokeuncle.github.io 无法访问案例拆清“DNS 污染”和代理节点链路问题的区别 | docs/blog/2026-07-09-dns-fake-ip-tun-github-pages-debug.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-09-dns-fake-ip-tun-github-pages-debug/ · source commit ad9b827 · blog commit be14038 | 4 | - |
 | 2026-07-10 | Day 9 | bench 聚焦扫描：对比 ngl=0/99 与 threads=6/12，观察 Metal offload 下 prefill 从约 31→511 tok/s 暴涨、decode 仅约 15→18 tok/s，小 batch decode 仍受权重/KV 读取带宽限制 | week-01-llama-cpp/reports/bench-day9-focused-20260710-142718.csv · week-01-llama-cpp/reports/bench-day9-threads-20260710-142800.csv | 3 | W2-Q2 ✅（经提示） |
+| 2026-07-10 | Day 10 | llama-perplexity 跑 WikiText-2 validation 小基线：Qwen2.5-7B Q4_K_M 在 ctx=512/chunks=16 下 PPL=6.8790±0.30335；补写 PPL/交叉熵/量化质量评估小白向讲解并发布博客 | week-01-llama-cpp/reports/ppl-day10-summary.md · docs/blog/2026-07-10-perplexity-ppl-explained.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-10-perplexity-ppl-explained/ · source commit 428c15b · blog commit 1c9790a | 2 | W2-Q3 待验收 |
 
 ## 欠账区（跳过待补）
 
