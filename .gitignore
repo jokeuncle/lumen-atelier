@@ -16,6 +16,7 @@
 # 报告里包含 Mac-specific 数字，且体积可能巨大。本地保留即可。
 **/reports/*.csv
 **/reports/*.json
+**/reports/distill/
 
 # ── 编辑器 / OS ──────────────────────────────
 .DS_Store
