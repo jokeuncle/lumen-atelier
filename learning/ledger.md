@@ -28,6 +28,7 @@
 | 2026-07-09 | Day 8 | KV cache 账专项讲解：拆清 layers × 2(K+V) × batch × KV_heads × seq × head_dim × bytes，手算 Qwen2.5-7B @2048 的 117.4MB、无 GQA 约 822MB、100 并发约 11.7GB | docs/blog/2026-07-09-kv-cache-memory.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-09-kv-cache-memory/ · source commit 99d2561 · blog commit c32fd87 | 3 | W1-Q5 待验收 |
 | 2026-07-09 | Day 8 | decode 速度上限公式专项讲解：用 bench 的 4.677GB 模型大小和 16.99 tok/s 反推有效权重读取约 79.5GB/s，并解释 150GB/s 带宽下理想上限约 32.1 tok/s、真实开销来自反量化/KV cache/kernel 调度/小 batch | docs/blog/2026-07-09-decode-bandwidth-limit.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-09-decode-bandwidth-limit/ · source commit 03ca922 · blog commit 8f45a4e | 3 | W2-Q1 待验收 |
 | 2026-07-09 | 网络排障补充 | DNS / fake-ip / TUN / HTTP 代理 / TLS 握手 / GitHub Pages 节点链路排障复盘：用本机 jokeuncle.github.io 无法访问案例拆清“DNS 污染”和代理节点链路问题的区别 | docs/blog/2026-07-09-dns-fake-ip-tun-github-pages-debug.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-09-dns-fake-ip-tun-github-pages-debug/ · source commit ad9b827 · blog commit be14038 | 4 | - |
+| 2026-07-10 | Day 9 | bench 聚焦扫描：对比 ngl=0/99 与 threads=6/12，观察 Metal offload 下 prefill 从约 31→511 tok/s 暴涨、decode 仅约 15→18 tok/s，小 batch decode 仍受权重/KV 读取带宽限制 | week-01-llama-cpp/reports/bench-day9-focused-20260710-142718.csv · week-01-llama-cpp/reports/bench-day9-threads-20260710-142800.csv | 3 | W2-Q2 ✅（经提示） |
 
 ## 欠账区（跳过待补）
 
@@ -41,3 +42,4 @@
 | 2026-07-06 | W1-Q1 | 经提示通过：能说清 header/metadata/tensor info/tensor data 顺序、metadata 前置原因、alignment 作用和 tensor offset 相对 tensor data 区。 |
 | 2026-07-06 | W1-Q3 | 追问通过：能分清 vocab 是文本片段到 token id 的字典，token_embd.weight 是 token id 到 3584 维向量的权重表，二者共享 vocab_size 编号空间。 |
 | 2026-07-08 | W1-Q4 | 追问通过：能说清 GQA 下 Q=28 头、K/V=4 头、head_dim=128，RoPE 旋转 Q/K 的二维坐标对，masked softmax 将未来 token 权重归零，out 投影混合各 head 输出向量。 |
+| 2026-07-10 | W2-Q2 | 经提示通过：能说出 prefill 是大矩阵并行计算、decode 有自回归依赖且小 batch 下每 token 需重读大量权重/KV，continuous batching 通过拼多个请求当前 decode 步提高算术强度和吞吐。 |
