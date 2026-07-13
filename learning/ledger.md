@@ -33,6 +33,7 @@
 | 2026-07-10 | Day 10 补强 | 交叉熵数学动机补强：从整段文本概率连乘、浮点下溢、log 把乘法变加法、负 log 变 loss、ln/exp 与 softmax/梯度优化配合，到 PPL 还原为平均有效岔路数 | docs/blog/2026-07-10-why-log-cross-entropy-ppl.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-10-why-log-cross-entropy-ppl/ · source commit 0b71006 · blog commit 9bebe93 | 2 | W2-Q3 待验收 |
 | 2026-07-10 | Day 10 补强 | “换空间”数学方法论补强：把 log、embedding、RoPE、量化、LoRA 统一到“原空间痛点→目标空间收益→代价→下游使用”的思维框架，并整理成十大思维检查表和日常练习法 | docs/blog/2026-07-10-change-of-space-math-muscle-memory.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-10-change-of-space-math-muscle-memory/ · source commit fb92fb8 · blog commit 65210f4 | 3 | W2-Q3 待验收 |
 | 2026-07-10 | Day 10 补强 | 数学恐惧与探索路径方法论：从 Euclid/Euler/Gauss/Riemann/Noether/Poincare/Hilbert/Grothendieck/von Neumann/Ramanujan/Tao 的思维动作中，提炼“问题→对象→空间→不变量→证明/计算→验证”的可训练路径 | docs/blog/2026-07-10-mathematical-mindset-path.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-10-mathematical-mindset-path/ · source commit 63ac730 · blog commit f289c37 | 3 | W2-Q3 待验收 |
+| 2026-07-13 | Day 11 | 采样实验：同一 prompt 对比 temp=0/0.7/1.5、top-k=10、top-p=0.3，确认 fixed seed 可复现、短强约束 prompt 主要在近义表达内摆动，并发布 logits/softmax/temperature/top-k/top-p 深度讲解 | docs/blog/2026-07-13-sampling-temperature-topk-topp.md · https://jokeuncle.github.io/blog/lumen-atelier-2026-07-13-sampling-temperature-topk-topp/ · source commit 41c2dda · blog commit 4f657bf | 3 | W2-Q4 待验收 |
 
 ## 欠账区（跳过待补）
 
