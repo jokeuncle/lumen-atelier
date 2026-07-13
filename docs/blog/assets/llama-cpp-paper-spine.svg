@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">从论文脊柱到本机实验的 AI Infra 推理主线</title>
+  <desc id="desc">左侧是 BPE、Transformer、RoPE、GQA、FlashAttention、PagedAttention 的论文脊柱，右侧是 Lumen Atelier llama.cpp 实验中的对应证据。</desc>
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}
+      .panel{fill:#fff;stroke:#dbe3ef;stroke-width:1.5}
+      .title{font:700 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#0f172a}
+      .subtitle{font:400 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#475569}
+      .year{font:700 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#155e75}
+      .paper{font:700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#111827}
+      .note{font:400 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#475569}
+      .metric{font:700 17px "SFMono-Regular","JetBrains Mono",monospace;fill:#7c2d12}
+      .label{font:700 14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#334155}
+      .axis{stroke:#0f766e;stroke-width:4;stroke-linecap:round}
+      .dot{fill:#0f766e;stroke:#ecfeff;stroke-width:5}
+      .link{stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:5 6}
+    </style>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0f172a" flood-opacity=".12"/>
+    </filter>
+  </defs>
+  <rect class="bg" width="1280" height="760"/>
+  <rect x="40" y="36" width="1200" height="688" rx="24" class="panel" filter="url(#shadow)"/>
+  <text x="78" y="92" class="title">从 Attention 到 PagedAttention：论文脊柱 × 本机实验</text>
+  <text x="80" y="124" class="subtitle">纵轴看研究问题怎么演化，横轴看同一问题在 Qwen2.5-7B / llama.cpp 实验里留下什么数字。</text>
+
+  <line x1="170" y1="178" x2="170" y2="642" class="axis"/>
+
+  <g transform="translate(0,0)">
+    <circle cx="170" cy="190" r="13" class="dot"/>
+    <rect x="210" y="160" width="390" height="74" rx="12" fill="#ecfeff" stroke="#99f6e4"/>
+    <text x="232" y="186" class="year">2016</text>
+    <text x="286" y="186" class="paper">Subword / BPE</text>
+    <text x="232" y="213" class="note">文本先变成 token，而不是字符或词。</text>
+    <line x1="600" y1="197" x2="684" y2="197" class="link"/>
+    <rect x="684" y="160" width="410" height="74" rx="12" fill="#fff7ed" stroke="#fed7aa"/>
+    <text x="708" y="188" class="metric">中文 21 字符 → 9 token</text>
+    <text x="708" y="214" class="note">压缩比 2.33 字符/token，token 是计费和推理单位。</text>
+  </g>
+
+  <g transform="translate(0,92)">
+    <circle cx="170" cy="190" r="13" class="dot"/>
+    <rect x="210" y="160" width="390" height="74" rx="12" fill="#eef2ff" stroke="#c7d2fe"/>
+    <text x="232" y="186" class="year" fill="#3730a3">2017</text>
+    <text x="286" y="186" class="paper">Attention Is All You Need</text>
+    <text x="232" y="213" class="note">序列建模核心变成 attention + FFN。</text>
+    <line x1="600" y1="197" x2="684" y2="197" class="link"/>
+    <rect x="684" y="160" width="410" height="74" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="708" y="188" class="metric">hidden=3584 · layers=28</text>
+    <text x="708" y="214" class="note">tokenize → embed → 28 层 → logits → sample。</text>
+  </g>
+
+  <g transform="translate(0,184)">
+    <circle cx="170" cy="190" r="13" class="dot"/>
+    <rect x="210" y="160" width="390" height="74" rx="12" fill="#f0fdf4" stroke="#bbf7d0"/>
+    <text x="232" y="186" class="year" fill="#166534">2021/2023</text>
+    <text x="330" y="186" class="paper">RoPE + GQA</text>
+    <text x="232" y="213" class="note">位置进入 Q/K；K/V heads 少于 Q heads。</text>
+    <line x1="600" y1="197" x2="684" y2="197" class="link"/>
+    <rect x="684" y="160" width="410" height="74" rx="12" fill="#fefce8" stroke="#fde68a"/>
+    <text x="708" y="188" class="metric">Q=28 heads · K/V=4 heads</text>
+    <text x="708" y="214" class="note">KV cache 从无 GQA 的 821.8MB 降到 117.4MB。</text>
+  </g>
+
+  <g transform="translate(0,276)">
+    <circle cx="170" cy="190" r="13" class="dot"/>
+    <rect x="210" y="160" width="390" height="74" rx="12" fill="#fff1f2" stroke="#fecdd3"/>
+    <text x="232" y="186" class="year" fill="#9f1239">2022</text>
+    <text x="286" y="186" class="paper">FlashAttention</text>
+    <text x="232" y="213" class="note">优化 attention 要看 HBM/SRAM 的 IO。</text>
+    <line x1="600" y1="197" x2="684" y2="197" class="link"/>
+    <rect x="684" y="160" width="410" height="74" rx="12" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="708" y="188" class="metric">150GB/s ÷ 4.677GB ≈ 32 tok/s</text>
+    <text x="708" y="214" class="note">decode 的第一瓶颈是数据搬运，不是只看 FLOPs。</text>
+  </g>
+
+  <g transform="translate(0,368)">
+    <circle cx="170" cy="190" r="13" class="dot"/>
+    <rect x="210" y="160" width="390" height="74" rx="12" fill="#f5f3ff" stroke="#ddd6fe"/>
+    <text x="232" y="186" class="year" fill="#6d28d9">2023</text>
+    <text x="286" y="186" class="paper">PagedAttention / vLLM</text>
+    <text x="232" y="213" class="note">KV cache 从计算细节变成内存管理问题。</text>
+    <line x1="600" y1="197" x2="684" y2="197" class="link"/>
+    <rect x="684" y="160" width="410" height="74" rx="12" fill="#ecfeff" stroke="#a5f3fc"/>
+    <text x="708" y="188" class="metric">117.4MB × 100 ≈ 11.7GB</text>
+    <text x="708" y="214" class="note">并发和长上下文把 KV cache 推成系统瓶颈。</text>
+  </g>
+
+  <rect x="80" y="660" width="1118" height="36" rx="10" fill="#f1f5f9"/>
+  <text x="102" y="683" class="label">主线：token 化解决输入单位 → Transformer 解决序列建模 → RoPE/GQA 改造 attention → IO-aware 解释性能 → PagedAttention 管理 KV cache。</text>
+</svg>

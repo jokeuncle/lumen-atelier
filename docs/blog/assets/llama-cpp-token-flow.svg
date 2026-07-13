@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">一次 decode token 的数据流和内存流</title>
+  <desc id="desc">展示 token id 从 embedding、28 层 Transformer、logits 到 sampling 的数据流，同时标注权重、KV cache、activation 和带宽开销。</desc>
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}
+      .panel{fill:#fff;stroke:#dbe3ef;stroke-width:1.5}
+      .title{font:700 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#0f172a}
+      .subtitle{font:400 16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#475569}
+      .box{fill:#f8fafc;stroke:#cbd5e1;stroke-width:1.5}
+      .box2{fill:#ecfeff;stroke:#67e8f9;stroke-width:1.5}
+      .box3{fill:#fff7ed;stroke:#fed7aa;stroke-width:1.5}
+      .box4{fill:#f0fdf4;stroke:#bbf7d0;stroke-width:1.5}
+      .head{font:700 18px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#111827}
+      .text{font:400 15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#475569}
+      .mono{font:700 15px "SFMono-Regular","JetBrains Mono",monospace;fill:#7c2d12}
+      .small{font:400 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#64748b}
+      .arrow{stroke:#0f766e;stroke-width:3;fill:none;marker-end:url(#arrow)}
+      .mem{stroke:#f97316;stroke-width:2.5;fill:none;marker-end:url(#orangeArrow);stroke-dasharray:7 6}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#0f766e"/>
+    </marker>
+    <marker id="orangeArrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#f97316"/>
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#0f172a" flood-opacity=".12"/>
+    </filter>
+  </defs>
+  <rect class="bg" width="1280" height="720"/>
+  <rect x="40" y="34" width="1200" height="650" rx="24" class="panel" filter="url(#shadow)"/>
+  <text x="78" y="90" class="title">一次 token 生成：张量流 + 内存流</text>
+  <text x="80" y="122" class="subtitle">绿色箭头是 forward 的张量流，橙色虚线是 decode 阶段绕不开的数据搬运。</text>
+
+  <rect x="80" y="180" width="150" height="92" rx="14" class="box2"/>
+  <text x="106" y="214" class="head">Token IDs</text>
+  <text x="106" y="242" class="mono">[B, S]</text>
+  <text x="106" y="263" class="small">BPE 输出的整数序列</text>
+
+  <rect x="280" y="180" width="165" height="92" rx="14" class="box"/>
+  <text x="308" y="214" class="head">Embedding</text>
+  <text x="306" y="242" class="mono">[B,S,3584]</text>
+  <text x="306" y="263" class="small">查 token_embd.weight</text>
+
+  <rect x="500" y="152" width="278" height="148" rx="16" class="box4"/>
+  <text x="530" y="188" class="head">Decoder Layer × 28</text>
+  <text x="530" y="218" class="text">RMSNorm → QKV → RoPE</text>
+  <text x="530" y="244" class="text">masked softmax → out projection</text>
+  <text x="530" y="270" class="text">RMSNorm → SwiGLU FFN → residual</text>
+
+  <rect x="830" y="180" width="160" height="92" rx="14" class="box"/>
+  <text x="858" y="214" class="head">Logits</text>
+  <text x="856" y="242" class="mono">[B,152064]</text>
+  <text x="856" y="263" class="small">下一 token 分数</text>
+
+  <rect x="1040" y="180" width="150" height="92" rx="14" class="box2"/>
+  <text x="1070" y="214" class="head">Sample</text>
+  <text x="1066" y="242" class="text">temp / top-k</text>
+  <text x="1066" y="263" class="text">top-p / seed</text>
+
+  <path d="M230 226 H280" class="arrow"/>
+  <path d="M445 226 H500" class="arrow"/>
+  <path d="M778 226 H830" class="arrow"/>
+  <path d="M990 226 H1040" class="arrow"/>
+  <path d="M1115 272 C1115 325 155 330 155 275" class="arrow"/>
+  <text x="436" y="352" class="small">生成的新 token 接回上下文，下一轮 decode 再走一遍</text>
+
+  <rect x="96" y="430" width="235" height="118" rx="16" class="box3"/>
+  <text x="124" y="464" class="head">权重读取</text>
+  <text x="124" y="494" class="mono">model_size = 4.677GB</text>
+  <text x="124" y="520" class="text">小 batch decode 每 token 近似重读大部分权重。</text>
+
+  <rect x="382" y="430" width="235" height="118" rx="16" class="box3"/>
+  <text x="410" y="464" class="head">KV Cache</text>
+  <text x="410" y="494" class="mono">117.4MB @ 2048</text>
+  <text x="410" y="520" class="text">历史 K/V 读写随上下文长度线性增长。</text>
+
+  <rect x="668" y="430" width="235" height="118" rx="16" class="box3"/>
+  <text x="696" y="464" class="head">Activation</text>
+  <text x="696" y="494" class="mono">hidden = 3584</text>
+  <text x="696" y="520" class="text">临时中间结果在算子之间流动。</text>
+
+  <rect x="954" y="430" width="235" height="118" rx="16" class="box3"/>
+  <text x="982" y="464" class="head">反量化 / 调度</text>
+  <text x="982" y="494" class="mono">Q4_K_M + kernels</text>
+  <text x="982" y="520" class="text">读 metadata、解码权重，小 kernel 难吃满带宽。</text>
+
+  <path d="M214 430 C250 368 330 310 514 275" class="mem"/>
+  <path d="M500 430 C525 365 565 310 606 300" class="mem"/>
+  <path d="M785 430 C735 365 690 323 650 300" class="mem"/>
+  <path d="M1072 430 C1010 360 900 305 760 275" class="mem"/>
+
+  <rect x="154" y="590" width="970" height="44" rx="12" fill="#f1f5f9"/>
+  <text x="184" y="618" class="text">心算：理论上限 ≈ 150GB/s ÷ 4.677GB ≈ 32 tok/s；真实速度会被 KV cache、activation、反量化、调度和 cache miss 拉低。</text>
+</svg>
